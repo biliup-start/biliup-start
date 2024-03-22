@@ -2,112 +2,112 @@
 
 :inputDrive
 set UserDrive=
-set /p UserDrive="ÇëÊäÈëÄãÏëÂ¼²¥µÄÅÌ·û£¨Ä¬ÈÏÎªCÅÌ£©£º"
+set /p UserDrive="è¯·è¾“å…¥ä½ æƒ³å½•æ’­çš„ç›˜ç¬¦ï¼ˆé»˜è®¤ä¸ºCç›˜ï¼‰ï¼š"
 if "%UserDrive%"=="" (
     set UserDrive=C
 )
 echo %UserDrive%| findstr /R "^[a-zA-Z]*$" > nul
 if %errorlevel%==1 (
-    echo ´íÎó: ÄãÊäÈëµÄ²»ÊÇ×ÖÄ¸£¬ÇëÖØÐÂÊäÈë¡£
+    echo é”™è¯¯: ä½ è¾“å…¥çš„ä¸æ˜¯å­—æ¯ï¼Œè¯·é‡æ–°è¾“å…¥ã€‚
     goto inputDrive
 )
 if not exist %UserDrive%:\ (
-    echo ´íÎó: Ã»ÓÐÕÒµ½ÄãÑ¡ÔñµÄ %UserDrive%ÅÌ Çëµ½ÎÒµÄµçÄÔÖÐ²é¿´ÕýÈ·ÅÌ·û
+    echo é”™è¯¯: æ²¡æœ‰æ‰¾åˆ°ä½ é€‰æ‹©çš„ %UserDrive%ç›˜ è¯·åˆ°æˆ‘çš„ç”µè„‘ä¸­æŸ¥çœ‹æ­£ç¡®ç›˜ç¬¦
     goto inputDrive
 )
-echo ÄãÂ¼²¥ÎÄ¼þºÍÈÕÖ¾ÔÚ %UserDrive%:\opt\biliup
+echo ä½ å½•æ’­æ–‡ä»¶å’Œæ—¥å¿—åœ¨ %UserDrive%:\opt\biliup
 
 where python >nul 2>nul
 if %errorlevel% neq 0 (
-    echo Î´°²×° python
-    set biliversion=Î´°²×°biliup
-    set pipversion=Î´°²×°python
+    echo æœªå®‰è£… python
+    set biliversion=æœªå®‰è£…biliup
+    set pipversion=æœªå®‰è£…python
     goto end
 )
 
-echo ¼ì²ébiliup°æ±¾...
+echo æ£€æŸ¥biliupç‰ˆæœ¬...
 for /f "tokens=2 delims= " %%i in ('pip3 show biliup ^| findstr Version') do set biliversion=%%i
 for /f "tokens=2 delims= " %%i in ('yolk -V biliup 2^>nul') do set pipversion=%%i
 
 if not defined pipversion (
-    echo ²éÑ¯×îÐÂ°æ±¾Ê§°Ü£¬ÕýÔÚ³¢ÊÔ°²×° yolk3k...
+    echo æŸ¥è¯¢æœ€æ–°ç‰ˆæœ¬å¤±è´¥ï¼Œæ­£åœ¨å°è¯•å®‰è£… yolk3k...
     powershell -Command "Start-Process -FilePath 'pip3' -ArgumentList 'install yolk3k' -Verb RunAs -Wait"
     for /f "tokens=2 delims= " %%i in ('yolk -V biliup 2^>nul') do set pipversion=%%i
     if not defined pipversion (
-        echo °²×° yolk3kÊ§°Ü  Ìø¹ý×Ô¶¯¸üÐÂ ÊÖ¶¯¸üÐÂÖÕ¶ËÈçÊý pip3 install -U biliup ...
+        echo å®‰è£… yolk3kå¤±è´¥  è·³è¿‡è‡ªåŠ¨æ›´æ–° æ‰‹åŠ¨æ›´æ–°ç»ˆç«¯å¦‚æ•° pip3 install -U biliup ...
         set pipversion=%biliversion%
     )
 ) 
 
 if "%pipversion%"=="%biliversion%" (
-    echo µ±Ç°ÔËÐÐ°æ±¾ v%biliversion%
+    echo å½“å‰è¿è¡Œç‰ˆæœ¬ v%biliversion%
 ) else (
-    echo µ±Ç°×îÐÂ°æ±¾ v%pipversion%
+    echo å½“å‰æœ€æ–°ç‰ˆæœ¬ v%pipversion%
 )
 
 :end
 if not defined biliversion (
-    echo Î´ÔËÐÐ¹ý½Å±¾ ¿ªÊ¼Ö´ÐÐ°²×°
-    echo ÕýÔÚ´´½¨ÔËÐÐÄ¿Â¼ %UserDrive%:\opt\biliup...
+    echo æœªè¿è¡Œè¿‡è„šæœ¬ å¼€å§‹æ‰§è¡Œå®‰è£…
+    echo æ­£åœ¨åˆ›å»ºè¿è¡Œç›®å½• %UserDrive%:\opt\biliup...
     mkdir %UserDrive%:\opt\biliup
 
-    echo É¾³ý¿ÉÄÜ´æÔÚµÄ chocolatey Ä¿Â¼...
+    echo åˆ é™¤å¯èƒ½å­˜åœ¨çš„ chocolatey ç›®å½•...
     if exist C:\opt\biliup\biliupR-v0.1.19-x86_64-windows (
         powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c rmdir /s /q C:\ProgramData\chocolatey' -Verb RunAs"
-        echo É¾³ý biliupR-v0.1.19-x86_64-windows Ä¿Â¼³É¹¦
+        echo åˆ é™¤ biliupR-v0.1.19-x86_64-windows ç›®å½•æˆåŠŸ
     )
 
-    echo ¼ì²é windowsbiliup.bat ÊÇ·ñ´æÔÚ Èç´æÔÚ½øÐÐÏÂÒ»²½...
+    echo æ£€æŸ¥ windowsbiliup.bat æ˜¯å¦å­˜åœ¨ å¦‚å­˜åœ¨è¿›è¡Œä¸‹ä¸€æ­¥...
     if not exist %~dp0\windowsbiliup.bat (
-        echo ÕýÔÚÏÂÔØ windowsbiliup.bat...
+        echo æ­£åœ¨ä¸‹è½½ windowsbiliup.bat...
         powershell -Command "Invoke-WebRequest -Uri 'https://blrec.iokun.top/d/189/windowsbiliup.bat?sign=WFofEtv2yAG3tO4WvAJCaWiLzHx1elLMdTMCPkP_y70=:0' -OutFile 'windowsbiliup.bat'"
     )
 
-    echo ÒÔ¹ÜÀíÔ±Éí·ÝÔËÐÐ windowsbiliup.bat...
+    echo ä»¥ç®¡ç†å‘˜èº«ä»½è¿è¡Œ windowsbiliup.bat...
     powershell -Command "Start-Process -FilePath 'windowsbiliup.bat' -Verb RunAs -Wait"
 
-    echo ¼ì²é biliupR-v0.1.19-x86_64-windows.zip ÊÇ·ñ´æÔÚ Èç´æÔÚ½øÐÐÏÂÒ»²½...
+    echo æ£€æŸ¥ biliupR-v0.1.19-x86_64-windows.zip æ˜¯å¦å­˜åœ¨ å¦‚å­˜åœ¨è¿›è¡Œä¸‹ä¸€æ­¥...
     if not exist %~dp0\biliupR-v0.1.19-x86_64-windows.zip (
-        echo ÕýÔÚÏÂÔØ biliupR-v0.1.19-x86_64-windows.zip...
+        echo æ­£åœ¨ä¸‹è½½ biliupR-v0.1.19-x86_64-windows.zip...
         powershell -Command "Invoke-WebRequest -Uri 'https://j.iokun.top/https://github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-x86_64-windows.zip' -OutFile 'biliupR-v0.1.19-x86_64-windows.zip'"
     )
 
-    echo ÕýÔÚ½« biliupR-v0.1.19-x86_64-windows.zip ½âÑ¹µ½ %UserDrive%:\opt\biliup...
+    echo æ­£åœ¨å°† biliupR-v0.1.19-x86_64-windows.zip è§£åŽ‹åˆ° %UserDrive%:\opt\biliup...
     powershell -Command "Expand-Archive -Path '%~dp0\biliupR-v0.1.19-x86_64-windows.zip' -DestinationPath '%UserDrive%:\opt\biliup' -Force"
     powershell -Command "Move-Item -Path '%UserDrive%:\opt\biliup\biliupR-v0.1.19-x86_64-windows\biliup.exe' -Destination '%UserDrive%:\opt\biliup\biliupR.exe'"
 
-    echo É¾³ý¿ÉÄÜ´æÔÚµÄ windowsbiliup.bat...
+    echo åˆ é™¤å¯èƒ½å­˜åœ¨çš„ windowsbiliup.bat...
     if exist %~dp0\windowsbiliup.bat (
         powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c del %~dp0\windowsbiliup.bat' -Verb RunAs"
-        echo É¾³ý windowsbiliup.bat³É¹¦
+        echo åˆ é™¤ windowsbiliup.batæˆåŠŸ
     )
 
-    echo É¾³ý¿ÉÄÜ´æÔÚµÄ biliupR-v0.1.19-x86_64-windows.zip...
+    echo åˆ é™¤å¯èƒ½å­˜åœ¨çš„ biliupR-v0.1.19-x86_64-windows.zip...
     if exist %~dp0\biliupR-v0.1.19-x86_64-windows.zip (
         powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c del %~dp0\biliupR-v0.1.19-x86_64-windows.zip' -Verb RunAs"
-        echo É¾³ý biliupR-v0.1.19-x86_64-windows.zip³É¹¦
+        echo åˆ é™¤ biliupR-v0.1.19-x86_64-windows.zipæˆåŠŸ
     )
 
-    echo É¾³ý¿ÉÄÜ´æÔÚµÄ biliupR-v0.1.19-x86_64-windows Ä¿Â¼...
+    echo åˆ é™¤å¯èƒ½å­˜åœ¨çš„ biliupR-v0.1.19-x86_64-windows ç›®å½•...
     if exist %UserDrive%:\opt\biliup\biliupR-v0.1.19-x86_64-windows (
         powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c rmdir /s /q %UserDrive%:\opt\biliup\biliupR-v0.1.19-x86_64-windows' -Verb RunAs"
-        echo É¾³ý biliupR-v0.1.19-x86_64-windows Ä¿Â¼³É¹¦
+        echo åˆ é™¤ biliupR-v0.1.19-x86_64-windows ç›®å½•æˆåŠŸ
     )
 )
-echo ²éÑ¯¿âÖÐ¿ÉÓÃ°æ±¾ Èç×îÐÂÌø¹ý...
+echo æŸ¥è¯¢åº“ä¸­å¯ç”¨ç‰ˆæœ¬ å¦‚æœ€æ–°è·³è¿‡...
 if not "%pipversion%"=="%biliversion%" (
-    set /p UserUpdate="biliup°æ±¾¹ýµÍ£¬Ç¿ÖÆ¸üÐÂ? [Èç²»ÐèÒªÇë¹Ø±ÕÍ£ÓÃ½Å±¾]£º"
+    set /p UserUpdate="biliupç‰ˆæœ¬è¿‡ä½Žï¼Œå¼ºåˆ¶æ›´æ–°? [å¦‚ä¸éœ€è¦è¯·å…³é—­åœç”¨è„šæœ¬]ï¼š"
     if "%UserUpdate%"=="" (
         powershell -Command "Start-Process -FilePath 'pip3' -ArgumentList 'install -U biliup' -Verb RunAs -Wait"
-        echo ÒÑ¸üÐÂµ½°æ±¾ v%pipversion% 
+        echo å·²æ›´æ–°åˆ°ç‰ˆæœ¬ v%pipversion% 
     ) else (
-        echo ¸üÐÂÊ§°Ü v%pipversion% £¬ÇëÊÖ¶¯¸üÐÂ
+        echo æ›´æ–°å¤±è´¥ v%pipversion% ï¼Œè¯·æ‰‹åŠ¨æ›´æ–°
     )
 ) 
 
-echo ¼ì²é cookies.json ÊÇ·ñ´æÔÚ£¨BÕ¾ÊÇ·ñµÇÂ¼£©...
+echo æ£€æŸ¥ cookies.json æ˜¯å¦å­˜åœ¨ï¼ˆBç«™æ˜¯å¦ç™»å½•ï¼‰...
 if not exist %UserDrive%:\opt\biliup\cookies.json (
-    echo cookies.json ²»´æÔÚÕýÔÚµÇÂ¼BÕ¾£¨ÍÆ¼öÉ¨Âë£©...
+    echo cookies.json ä¸å­˜åœ¨æ­£åœ¨ç™»å½•Bç«™ï¼ˆæŽ¨èæ‰«ç ï¼‰...
     cd %UserDrive%:\opt\biliup
     .\biliupR.exe login
 )
@@ -117,12 +117,12 @@ timeout /t 3 /nobreak >nul
 if exist %UserDrive%:\opt\biliup\cookies.json (
     if exist %UserDrive%:\opt\biliup\qrcode.png (
         powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c del %UserDrive%:\opt\biliup\qrcode.png' -Verb RunAs"    
-        echo µÇÂ¼³É¹¦ É¾³ýµÇÂ¼¶þÎ¬ÂëÍ¼Æ¬
+        echo ç™»å½•æˆåŠŸ åˆ é™¤ç™»å½•äºŒç»´ç å›¾ç‰‡
     )else (
-        echo µÇÂ¼³É¹¦»ò cookies.json ÎÄ¼þÒÑ´æÔÚ
+        echo ç™»å½•æˆåŠŸæˆ– cookies.json æ–‡ä»¶å·²å­˜åœ¨
     )
 ) else (
-    echo µÇÂ¼Ê§°Ü Çë´ò¿ªÖÕ¶ËÊäÈë %UserDrive%:\opt\biliup\biliupR.exe login ÊÖ¶¯µÇÂ¼
+    echo ç™»å½•å¤±è´¥ è¯·æ‰“å¼€ç»ˆç«¯è¾“å…¥ %UserDrive%:\opt\biliup\biliupR.exe login æ‰‹åŠ¨ç™»å½•
 )
 
 timeout /t 5 /nobreak >nul
@@ -131,18 +131,18 @@ setlocal enabledelayedexpansion
 set "ForbiddenPorts=0 1 7 9 11 13 15 17 19 20 21 22 23 25 37 42 43 53 77 79 87 95 101 102 103 104 109 110 111 113 115 117 119 123 135 139 143 179 389 465 512 513 514 515 526 530 531 532 540 556 563 587 601 636 993 995 2049 3659 4045 6000 6665 6666 6667 6668 6669 137 139 445 593 1025 2745 3127 6129 3389"
 :input
 set UserInput=
-set /p UserInput="ÇëÊäÈëÒ»¸öÐ¡ÓÚ65535¶Ë¿Ú(»Ø³µÄ¬ÈÏ19159)£º"
+set /p UserInput="è¯·è¾“å…¥ä¸€ä¸ªå°äºŽ65535ç«¯å£(å›žè½¦é»˜è®¤19159)ï¼š"
 if "%UserInput%"=="" (
     set UserInput=19159
 )
 echo %UserInput%| findstr /R "^[0-9][0-9]*$" > nul
 if %errorlevel%==1 (
-    echo ´íÎó: ÄãÊäÈëµÄ²»ÊÇÊý×Ö£¬ÇëÖØÐÂÊäÈë¡£
+    echo é”™è¯¯: ä½ è¾“å…¥çš„ä¸æ˜¯æ•°å­—ï¼Œè¯·é‡æ–°è¾“å…¥ã€‚
     goto input
 )
 for %%i in (%ForbiddenPorts%) do (
     if %UserInput% equ %%i (
-        echo ´íÎó: ¶Ë¿Ú %UserInput% ±»½ûÓÃ£¬ÇëÖØÐÂÊäÈë¡£
+        echo é”™è¯¯: ç«¯å£ %UserInput% è¢«ç¦ç”¨ï¼Œè¯·é‡æ–°è¾“å…¥ã€‚
         goto input
     )
 )
@@ -155,33 +155,33 @@ if defined num (
     goto loop
 )
 if %len% GTR 5 (
-    echo ´íÎó: ÄãÊäÈëµÄÊý×Ö³¬¹ýÁË5Î»£¬ÇëÖØÐÂÊäÈë¡£
+    echo é”™è¯¯: ä½ è¾“å…¥çš„æ•°å­—è¶…è¿‡äº†5ä½ï¼Œè¯·é‡æ–°è¾“å…¥ã€‚
     goto input
 )
 if %UserInput% GTR 65535 (
-    echo ´íÎó: ÄãÊäÈëµÄÊý×Ö³¬¹ýÁË65535£¬ÇëÖØÐÂÊäÈë¡£
+    echo é”™è¯¯: ä½ è¾“å…¥çš„æ•°å­—è¶…è¿‡äº†65535ï¼Œè¯·é‡æ–°è¾“å…¥ã€‚
     goto input
 )
 netstat -aon | findstr /R /C:"^  TCP    [0-9.]*:%UserInput% " >nul
 if %errorlevel%==0 (
-    echo ´íÎó: ¶Ë¿Ú %UserInput% ÒÑ±»Õ¼ÓÃ£¬ÇëÖØÐÂÊäÈë¡£
+    echo é”™è¯¯: ç«¯å£ %UserInput% å·²è¢«å ç”¨ï¼Œè¯·é‡æ–°è¾“å…¥ã€‚
     goto input
 )
-echo ÄãÊäÈëµÄ¶Ë¿ÚÊÇ %UserInput%
+echo ä½ è¾“å…¥çš„ç«¯å£æ˜¯ %UserInput%
 
-set /p UserPassword="ÇëÊäÈëÃÜÂë(»Ø³µ²»Ê¹ÓÃÃÜÂë)£º"
+set /p UserPassword="è¯·è¾“å…¥å¯†ç (å›žè½¦ä¸ä½¿ç”¨å¯†ç )ï¼š"
 if "%UserPassword%"=="" (
-    echo Î´ÆôÓÃÃÜÂë¹«Íø²»ÍÆ¼ö ³ÖÐøÔËÐÐbiliupÐè±£³Öµ±Ç°´°¿Ú´æÔÚ
+    echo æœªå¯ç”¨å¯†ç å…¬ç½‘ä¸æŽ¨è æŒç»­è¿è¡Œbiliupéœ€ä¿æŒå½“å‰çª—å£å­˜åœ¨
 )
 
-echo ÕýÔÚÆô¶¯biliup ÔËÐÐ³É¹¦ºó10Ãë×Ô¶¯ÎªÄã´ò¿ªwebuiÅäÖÃ¶Ë...
+echo æ­£åœ¨å¯åŠ¨biliup è¿è¡ŒæˆåŠŸåŽ10ç§’è‡ªåŠ¨ä¸ºä½ æ‰“å¼€webuié…ç½®ç«¯...
 cd %UserDrive%:\opt\biliup
 if "%UserPassword%"=="" (
     start /B biliup -P %UserInput% restart
     timeout /t 11 /nobreak >nul
     start http://localhost:%UserInput%
 ) else (
-    echo ÕËºÅ£ºbiliup ÃÜÂë£º%UserPassword% ³ÖÐøÔËÐÐbiliupÐè±£³Öµ±Ç°´°¿Ú´æÔÚ
+    echo è´¦å·ï¼šbiliup å¯†ç ï¼š%UserPassword% æŒç»­è¿è¡Œbiliupéœ€ä¿æŒå½“å‰çª—å£å­˜åœ¨
     start /B biliup -P %UserInput% --password %UserPassword% restart
     timeout /t 11 /nobreak >nul
     start http://localhost:%UserInput%
