@@ -10,5 +10,5 @@ Linux版(debian)：
 wget -O installb.sh https://github.com/ikun1993/biliupstart/blob/d245614af055c5116136a37a0bd800f2bb7797e1/debian.sh && chmod +x installb.sh && bash installb.sh
 
 Windows版：
-[https://github.com/66a9445c-5789-433c-868e-e20618a3088e
-](https://github.com/ikun1993/biliupstart/blob/d245614af055c5116136a37a0bd800f2bb7797e1/Win.bat)https://github.com/ikun1993/biliupstart/blob/d245614af055c5116136a37a0bd800f2bb7797e1/Win.bat
+
+https://github.com/ikun1993/biliupstart/blob/d245614af055c5116136a37a0bd800f2bb7797e1/Win.bat
