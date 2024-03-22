@@ -7,8 +7,8 @@ win端和debian及其分支两个一键启动biliup脚本
 
 Linux版(debian)：
 
-wget -O installb.sh https://github.com/ikun1993/biliupstart/blob/d245614af055c5116136a37a0bd800f2bb7797e1/debian.sh && chmod +x installb.sh && bash installb.sh
+wget -O installb.sh https://github.com/ikun1993/biliupstart/releases/download/biliupstart/start.sh && chmod +x installb.sh && bash installb.sh
 
 Windows版：
 
-https://github.com/ikun1993/biliupstart/blob/d245614af055c5116136a37a0bd800f2bb7797e1/Win.bat
+https://github.com/ikun1993/biliupstart/releases/download/biliupstart/start.bat
