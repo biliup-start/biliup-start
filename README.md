@@ -9,7 +9,6 @@ win端和debian及其分支两个一键启动biliup脚本
 https://github.com/ikun1993/biliupstart/releases/latest/download/biliup.start.py
 
 Windows版：
-
 https://github.com/ikun1993/biliupstart/releases/latest/download/start.bat
 
 Linux版(debian)：
