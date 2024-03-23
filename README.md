@@ -10,5 +10,4 @@ Linux版(debian)：
 wget -O installb.sh https://github.com/ikun1993/biliupstart/releases/download/biliupstart/start.sh && chmod +x installb.sh && bash installb.sh
 
 Windows版：
-
-https://github.com/ikun1993/biliupstart/releases/download/biliupstart/start.bat
+https://github.com/ikun1993/biliupstart/releases/download/biliup%E7%9C%9F%E4%B8%80%E9%94%AEstart/Windows.start.bat
