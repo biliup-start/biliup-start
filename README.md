@@ -5,7 +5,7 @@ win端和debian及其分支两个一键启动biliup脚本
 ![image](https://github.com/ikun1993/biliupstart/assets/96544807/1097ed4a-3920-431d-afb0-fe827b24757c)
 ![image](https://github.com/ikun1993/biliupstart/assets/96544807/7939d577-e910-4d0f-a40c-002f1adeba6b)
 
-如果你的系统已经运行了PY可以试试：
+如果已安装Python3：
 https://github.com/ikun1993/biliupstart/releases/latest/download/biliup.start.py
 
 Windows版：
