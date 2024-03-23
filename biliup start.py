@@ -2,8 +2,24 @@ import platform
 import subprocess
 import requests
 import os
+import time
+
+def is_admin():
+    if platform.system() == "Windows":
+        try:
+            return ctypes.windll.shell32.IsUserAnAdmin()
+        except:
+            return False
+    else:
+        return os.getuid() == 0
 
 def download_and_run_script(url):
+    # 检查IP地址的国家
+    response = requests.get('https://ipinfo.io/country')
+    country = response.text.strip()
+    if country.lower() == 'cn':
+        url = 'https://j.iokun.top/' + url
+
     response = requests.get(url)
     script_name = url.split('/')[-1]
     with open(script_name, 'wb') as file:
@@ -11,9 +27,12 @@ def download_and_run_script(url):
     if platform.system() == "Windows":
         subprocess.run(['cmd', '/c', script_name])
     else:
+        # 赋予脚本执行权限
+        subprocess.run(['chmod', 'a+x', script_name])
+        if not is_admin():
+            print("请以管理员身份运行此脚本。")
+            return
         subprocess.run(['bash', script_name])
-    # 删除下载的文件
-    os.remove(script_name)
 
 # 检查操作系统类型
 os_type = platform.system()
