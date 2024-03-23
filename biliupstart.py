@@ -16,9 +16,11 @@ def download_and_run_script(url):
 os_type = platform.system()
 if os_type == "Windows":
     # Windows
+    print("你是Windows系统")
     download_and_run_script('https://github.com/ikun1993/biliupstart/releases/latest/download/start.bat')
 elif os_type in ["Linux", "Darwin"]:
     # Linux or Mac
+    print("你是Linux系统")
     download_and_run_script('https://github.com/ikun1993/biliupstart/releases/latest/download/start.sh')
 else:
     print("Unsupported operating system.")
