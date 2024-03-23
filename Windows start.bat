@@ -177,12 +177,12 @@ if "%UserPassword%"=="" (
 echo 正在启动biliup 运行成功后10秒自动为你打开webui配置端...
 cd %UserDrive%:\opt\biliup
 if "%UserPassword%"=="" (
-    start /B biliup -P %UserInput% restart
+    start /B biliup -P %UserInput% start
     timeout /t 11 /nobreak >nul
     start http://localhost:%UserInput%
 ) else (
     echo 账号：biliup 密码：%UserPassword% 持续运行biliup需保持当前窗口存在
-    start /B biliup -P %UserInput% --password %UserPassword% restart
+    start /B biliup -P %UserInput% --password %UserPassword% start
     timeout /t 11 /nobreak >nul
     start http://localhost:%UserInput%
 )
