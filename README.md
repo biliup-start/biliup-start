@@ -3,8 +3,8 @@
 基于biliup社区一键安装脚本 https://biliup.me/d/34
 
 ![image](https://github.com/ikun1993/biliupstart/assets/96544807/19975fd5-b738-4586-ba7b-11915f230bc3)
-![image](https://git![image](https://github.com/ikun1993/biliupstart/assets/96544807/fb3f5775-2785-4075-8da2-01a020c1bf50)
-hub.com/ikun1993/biliupstart/assets/96544807/1097ed4a-3920-431d-afb0-fe827b24757c)
+![image](https://github.com/ikun1993/biliupstart/assets/96544807/94ee631c-802c-4ca7-8812-a5bafd018ac7)
+![image](https://github.com/ikun1993/biliupstart/assets/96544807/1097ed4a-3920-431d-afb0-fe827b24757c)
 ![image](https://github.com/ikun1993/biliupstart/assets/96544807/7939d577-e910-4d0f-a40c-002f1adeba6b)
 
 **如果已安装Python3**：
