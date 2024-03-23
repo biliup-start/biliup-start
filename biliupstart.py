@@ -1,6 +1,7 @@
 import platform
 import subprocess
 import requests
+import os
 
 def download_and_run_script(url):
     response = requests.get(url)
@@ -11,6 +12,8 @@ def download_and_run_script(url):
         subprocess.run(['cmd', '/c', script_name])
     else:
         subprocess.run(['bash', script_name])
+    # 删除下载的文件
+    os.remove(script_name)
 
 # 检查操作系统类型
 os_type = platform.system()
