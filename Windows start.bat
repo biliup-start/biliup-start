@@ -2,7 +2,7 @@
 
 :inputDrive
 set UserDrive=
-set /p UserDrive="请输入你想录播的盘符（默认为C盘）："
+set /p UserDrive="请输入你录播的盘符（默认为C盘）："
 if "%UserDrive%"=="" (
     set UserDrive=C
 )
