@@ -10,6 +10,7 @@
 
 **如果已安装Python3**：
 
+
 Windows版：
 https://github.com/ikun1993/biliupstart/releases/latest/download/biliup.start.py
 
@@ -19,6 +20,7 @@ Linux版(debian)：
 `
 
 **脚本直接使用**：
+
 
 Windows版：
 https://github.com/ikun1993/biliupstart/releases/latest/download/start.bat
