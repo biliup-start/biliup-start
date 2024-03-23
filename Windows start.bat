@@ -2,7 +2,7 @@
 
 :inputDrive
 set UserDrive=
-set /p UserDrive="请输入你录播的盘符（默认为C盘）："
+set /p UserDrive="请输入你想录播的盘符（默认为C盘）："
 if "%UserDrive%"=="" (
     set UserDrive=C
 )
@@ -34,15 +34,30 @@ if not defined pipversion (
     powershell -Command "Start-Process -FilePath 'pip3' -ArgumentList 'install yolk3k' -Verb RunAs -Wait"
     for /f "tokens=2 delims= " %%i in ('yolk -V biliup 2^>nul') do set pipversion=%%i
     if not defined pipversion (
-        echo 安装 yolk3k失败  跳过自动更新 手动更新终端如数 pip3 install -U biliup ...
+        echo 检查库中版本失败 如需更新手动终端输入 pip3 install -U biliup ...
         set pipversion=%biliversion%
     )
 ) 
 
-if "%pipversion%"=="%biliversion%" (
-    echo 当前运行版本 v%biliversion%
-) else (
-    echo 当前最新版本 v%pipversion%
+if defined biliversion (
+    if "%pipversion%"=="%biliversion%" (
+        echo 当前运行版本 v%biliversion%
+    ) else (
+        echo 当前最新版本 v%pipversion%
+    )
+
+    echo 查询库中可用版本 如最新跳过...
+
+    if not "%pipversion%"=="%biliversion%" (
+        set /p UserUpdate="biliup版本过低，按任意键更新? [如不需要请关闭停用脚本]："
+
+        if "%UserUpdate%"=="" (
+            powershell -Command "Start-Process -FilePath 'pip3' -ArgumentList 'install -U biliup' -Verb RunAs -Wait"
+            echo 已更新版本 v%pipversion% 
+        ) else (
+            echo 失败最新 v%pipversion% ，如需更新手动终端输入 pip3 install -U biliup 
+        )
+    )
 )
 
 :end
@@ -94,16 +109,6 @@ if not defined biliversion (
         echo 删除 biliupR-v0.1.19-x86_64-windows 目录成功
     )
 )
-echo 查询库中可用版本 如最新跳过...
-if not "%pipversion%"=="%biliversion%" (
-    set /p UserUpdate="biliup版本过低，强制更新? [如不需要请关闭停用脚本]："
-    if "%UserUpdate%"=="" (
-        powershell -Command "Start-Process -FilePath 'pip3' -ArgumentList 'install -U biliup' -Verb RunAs -Wait"
-        echo 已更新到版本 v%pipversion% 
-    ) else (
-        echo 更新失败 v%pipversion% ，请手动更新
-    )
-) 
 
 echo 检查 cookies.json 是否存在（B站是否登录）...
 if not exist %UserDrive%:\opt\biliup\cookies.json (
