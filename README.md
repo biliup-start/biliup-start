@@ -12,7 +12,7 @@ https://github.com/ikun1993/biliupstart/releases/latest/download/biliup.start.py
 
 Linux版(debian)：
 
-`wget -O start.py https://github.com/ikun1993/biliupstart/releases/latest/download/biliup.start.py && python3 biliup.start.py
+`wget -O start.py https://github.com/ikun1993/biliupstart/releases/latest/download/biliup.start.py && python3 start.py
 `
 
 **脚本直接使用**：
