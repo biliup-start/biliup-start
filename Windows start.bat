@@ -20,8 +20,6 @@ echo 你录播文件和日志在 %UserDrive%:\opt\biliup
 where python >nul 2>nul
 if %errorlevel% neq 0 (
     echo 未安装 python
-    set biliversion=未安装biliup
-    set pipversion=未安装python
     goto end
 )
 
