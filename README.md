@@ -2,8 +2,7 @@
 
 基于biliup社区一键安装脚本 https://biliup.me/d/34
 
-![image](https://github.com/ikun1993/biliupstart/assets/96544807/89281a00-a313-48f2-b4e7-cf9899577661)
-![image](https://github.com/ikun1993/biliupstart/assets/96544807/94ee631c-802c-4ca7-8812-a5bafd018ac7)
+![image](https://github.com/ikun1993/biliupstart/assets/96544807/94ee631c-802c-4ca7-8812-a5bafd018ac7)![image](https://github.com/ikun1993/biliupstart/assets/96544807/89281a00-a313-48f2-b4e7-cf9899577661)
 ![image](https://github.com/ikun1993/biliupstart/assets/96544807/1097ed4a-3920-431d-afb0-fe827b24757c)
 ![image](https://github.com/ikun1993/biliupstart/assets/96544807/7939d577-e910-4d0f-a40c-002f1adeba6b)
 
