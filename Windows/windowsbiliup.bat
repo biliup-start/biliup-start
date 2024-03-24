@@ -1,4 +1,16 @@
 @echo off
+
+:: 发送运行次数到后端服务器
+set backend_url=https://run.biliup.me/update_run_count
+powershell -Command "Invoke-RestMethod -Uri %backend_url% -Method POST -Body @{run_count=1}"
+
+:: 请求 Flask 获取运行次数
+set get_run_count_url=https://run.biliup.me/get_run_count
+for /f "delims=" %%i in ('powershell -Command "(Invoke-RestMethod -Uri %get_run_count_url%).run_count"') do set run_count=%%i
+
+:: 输出到终端
+echo 一键脚本已运行 %run_count% 次
+
 :: Step 1: 安装 Chocolatey
 @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 
@@ -14,25 +26,28 @@ setx PATH "%PATH%;C:\Python310\Scripts\;C:\Python310\"
 :: Step 5: 检测 IP 归属地并安装 biliup
 setlocal
 
-REM 获取本机IP归属地
+:: 判断 IP 归属地是否为中国
 for /f %%b in ('curl -s https://ipinfo.io/country') do (
     set CountryCode=%%b
 )
 echo IP归属地: "%CountryCode%"
-pip install yolk3k
+if "CountryCode!"=="CN" (
+    set pipSource=https://pypi.tuna.tsinghua.edu.cn/simple
+    echo 你的 IP 归属地是中国，将使用清华源安装 Python 库。
+) else (
+    set pipSource=https://pypi.org/simple
+    echo 你的 IP 归属地不是中国，将使用默认源安装 Python 库。
+)
+::  安装 yolk3k
+pip install -i "%pipSource%" yolk3k
 for /f "tokens=2 delims= " %%i in ('yolk -V biliup 2^>nul') do set pipversion=%%i
 if not defined pipversion (
     echo 检查库中版本失败 安装0.4.44 ...
     set pipversion=0.4.44
 )
-:: 判断 IP 归属地是否为中国
-if "%CountryCode%"=="CN" (
-    echo 你的 IP 归属地是中国，将使用清华源安装 biliup。
-    pip install -i https://pypi.tuna.tsinghua.edu.cn/simple biliup=="%pipversion%"
-) else (
-    echo 你的 IP 归属地不是中国，将使用默认源安装 biliup。
-    pip install biliup=="%pipversion%"
-)
+::  安装 biliup
+pip install -i "%pipSource%" biliup=="%pipversion%"
+
 
 endlocal
 :: 输出完成信息
