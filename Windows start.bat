@@ -79,8 +79,8 @@ if not defined biliversion (
     mkdir %UserDrive%:%BILIUP_DIR%
 
     echo 删除可能存在的 chocolatey 目录...
-    if exist %UserDrive%:%BILIUP_DIR%\biliupR-v0.1.19-x86_64-windows (
-        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c rmdir /s /q %UserDrive%:%BILIUP_DIR%\biliupR-v0.1.19-x86_64-windows' -Verb RunAs"
+    if exist C:\ProgramData\chocolatey (
+        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c rmdir /s /q C:\ProgramData\chocolatey' -Verb RunAs"
         echo 删除 biliupR-v0.1.19-x86_64-windows 目录成功
     )
 
