@@ -1,5 +1,17 @@
 #!/bin/bash
 
+# 获取国家代码
+country_code=$(curl -s https://ipinfo.io/country)
+
+# 检查国家代码是否为 CN
+if [ "$country_code" = "CN" ]; then
+    url="https://j.iokun.top/https://"
+    pipsource="https://pypi.tuna.tsinghua.edu.cn/simple"
+else
+    url="https://"
+    pipsource="https://pypi.org/simple"
+fi
+
 # 定义颜色代码
 green='\033[0;32m'
 plain='\033[0m'
@@ -25,11 +37,11 @@ install_biliup() {
             arch_choice=0
         fi
         if [ "$arch_choice" -eq 0 ]; then
-            cd /opt/biliup && wget https://j.iokun.top/https://github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-x86_64-linux.tar.xz && tar -xf biliupR-v0.1.19-x86_64-linux.tar.xz && mv "/opt/biliup/biliupR-v0.1.19-x86_64-linux/biliup" "/opt/biliup/biliupR"
+            cd /opt/biliup && wget ${url}github.com/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-x86_64-linux.tar.xz && tar -xf biliupR-v0.1.19-x86_64-linux.tar.xz && mv "/opt/biliup/biliupR-v0.1.19-x86_64-linux/biliup" "/opt/biliup/biliupR"
         elif [ "$arch_choice" -eq 1 ]; then
-            cd /opt/biliup && wget https://j.iokun.top/https://github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-aarch64-linux.tar.xz && tar -xf biliupR-v0.1.19-aarch64-linux.tar.xz && mv "/opt/biliup/biliupR-v0.1.19-aarch64-linux/biliup" "/opt/biliup/biliupR"
+            cd /opt/biliup && wget ${url}github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-aarch64-linux.tar.xz && tar -xf biliupR-v0.1.19-aarch64-linux.tar.xz && mv "/opt/biliup/biliupR-v0.1.19-aarch64-linux/biliup" "/opt/biliup/biliupR"
         else
-            cd /opt/biliup && wget https://j.iokun.top/https://github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-arm-linux.tar.xz && tar -xf biliupR-v0.1.19-arm-linux.tar.xz && mv "/opt/biliup/biliupR-v0.1.19-arm-linux/biliup" "/opt/biliup/biliupR"
+            cd /opt/biliup && wget ${url}github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-arm-linux.tar.xz && tar -xf biliupR-v0.1.19-arm-linux.tar.xz && mv "/opt/biliup/biliupR-v0.1.19-arm-linux/biliup" "/opt/biliup/biliupR"
         fi
         echo -e "biliup-rs完成：${green}已经下载${plain}"
     else
@@ -73,14 +85,14 @@ fi
 python_version=$(python3 --version | cut -d " " -f2)
 
 # 使用sort命令和版本比较来决定使用哪个pip命令
-if printf '3.11\n%s' "$python_version" | sort -V | head -n1 | grep -q '3.11'; then
-    echo -e "Python3的版本是${yellow} $python_version ${plain}, 使用${green}pip install --break-system-packages${plain} 来安装..."
-    pip_install_cmd="pip3 install --break-system-packages"
-    python3_install_cmd="--break-system-packages"
+if printf '3.11\n%s' "$version" | sort -V | head -n1 | grep -q '3.11'; then
+    echo -e "Python3的版本是${yellow} $version ${plain}, 使用${green}pip install --break-system-packages${plain} 来安装..."
+    pip_install_cmd="pip3 install -i $pipSource --break-system-packages"
+    python3_install_cmd="-i $pipSource --break-system-packages"
 else
-    echo -e "Python3的版本是${yellow} $python_version ${plain}, 使用标准${green} pip install ${plain}来安装..."
-    pip_install_cmd="pip3 install"
-    python3_install_cmd=""
+    echo -e "Python3的版本是${yellow} $version ${plain}, 使用标准${green} pip install ${plain}来安装..."
+    pip_install_cmd="pip3 install -i $pipSource"
+    python3_install_cmd="-i $pipSource"
 fi
 
 echo -n "检查biliup版本中，请等待"
@@ -93,6 +105,10 @@ echo ""
 
 # 检查pip3版本并获取biliup的官方版本
 if ! pip3 --version &> /dev/null; then
+    sudo apt-get update
+    sudo apt-get install python3-pip
+fi
+if ! pip3 --version &> /dev/null; then
     curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && sudo python3 "get-pip.py" $python3_install_cmd &&  rm -f "get-pip.py"
     echo -e "检测到只安装python3 已自动安装${green}最新版本pip3${plain}"   
 else
@@ -100,18 +116,17 @@ else
         official_version=$(pip search biliup | cut -d ' ' -f 2)
     else
         if [ -n "$(pip3 show yolk3k | grep Version | cut -d ' ' -f 2)" ]; then
-            official_version=$(timeout 22 yolk -V biliup | cut -d ' ' -f 2)
+            official_version=$(yolk -H "%pipsource%" -V biliup | cut -d ' ' -f 2)
         else    
             sudo $pip_install_cmd yolk3k
             source ~/.bashrc  # 更新你的 shell
-            official_version=$(timeout 22 yolk -V biliup | cut -d ' ' -f 2)
+            official_version=$(yolk -H "%pipsource%" -V biliup | cut -d ' ' -f 2)
         fi
     fi
 fi
 
 # 检查本地biliup版本
 local_version=$(pip3 show biliup | grep Version | cut -d ' ' -f 2)
-
 echo -e "本地版本：${green} $local_version ${plain}"
 if [ -n "$official_version" ]; then
     echo -e "最新版本：${yellow} $official_version ${plain}"
@@ -201,7 +216,7 @@ run_biliup() {
         fi
         if [ "$rrun" = "y" ]; then
             echo -e "biliup v0.4.32以下 请到${red} /opt/biliup/config.toml ${plain}进行配置"
-            curl -L "https:///j.iokun.top/https://raw.githubusercontent.com/biliup/biliup/master/public/config.toml" -o "/opt/biliup/config.toml"
+            curl -L "${url}raw.githubusercontent.com/biliup/biliup/master/public/config.toml" -o "/opt/biliup/config.toml"
             if [ "$UserPassword" = "0" ]; then
                 sudo bash -c "cd /opt/biliup && biliup --http -P $UserPort start"
             else
@@ -209,7 +224,7 @@ run_biliup() {
             fi
         else
             echo -e "biliup v0.4.32以下 请到${red} /opt/biliup/config.toml ${plain}进行配置"
-            curl -L "https:///j.iokun.top/https://raw.githubusercontent.com/biliup/biliup/master/public/config.toml" -o "/opt/biliup/config.toml"
+            curl -L "${url}raw.githubusercontent.com/biliup/biliup/master/public/config.toml" -o "/opt/biliup/config.toml"
             if [ "$UserPassword" = "0" ]; then
                 sudo bash -c "cd /opt/biliup && biliup -P $UserPort start"
             else
