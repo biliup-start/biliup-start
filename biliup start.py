@@ -14,16 +14,22 @@ def is_admin():
         return os.getuid() == 0
 
 def download_and_run_script(url):
-    # 检查IP地址的国家
-    response = requests.get('https://ipinfo.io/country')
-    country = response.text.strip()
-    if country.lower() == 'cn':
-        url = 'https://j.iokun.top/' + url
-
-    response = requests.get(url)
     script_name = url.split('/')[-1]
-    with open(script_name, 'wb') as file:
-        file.write(response.content)
+    # 如果文件不存在，那么下载
+    if not os.path.exists(script_name):
+        # 检查IP地址的国家
+        response = requests.get('https://ipinfo.io/country')
+        country = response.text.strip()
+        if country.lower() == 'cn':
+            url = 'https://j.iokun.top/' + url
+
+        response = requests.get(url)
+        with open(script_name, 'wb') as file:
+            file.write(response.content)
+    else:
+        print(f"{script_name} 已经存在跳过下载开始执行")
+
+    # 运行脚本
     if platform.system() == "Windows":
         subprocess.run(['cmd', '/c', script_name])
     else:
