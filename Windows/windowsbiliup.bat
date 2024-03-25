@@ -40,7 +40,7 @@ if "CountryCode!"=="CN" (
 )
 ::  安装 yolk3k
 pip install -i "%pipSource%" yolk3k
-for /f "tokens=2 delims= " %%i in ('yolk -V biliup 2^>nul') do set pipversion=%%i
+for /f "tokens=2 delims= " %%i in ('yolk -H "%pipSource%" -V biliup 2^>nul') do set pipversion=%%i
 if not defined pipversion (
     echo 检查库中版本失败 安装0.4.44 ...
     set pipversion=0.4.44
