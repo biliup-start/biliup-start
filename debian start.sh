@@ -18,30 +18,37 @@ plain='\033[0m'
 red='\e[31m'
 yellow='\e[33m'
 
+BILIUP_DIR="/opt/biliup"
+
 # 安装下载命令
 install_biliup() {
-    if [ ! -f "/opt/biliup/install.sh" ]; then
-        sudo bash -c "wget -O /opt/biliup/install.sh https://image.biliup.me/install.sh && chmod +x /opt/biliup/install.sh && bash /opt/biliup/install.sh"
+    if [ "$(id -u)" != "0" ]; then
+        echo "This script must be run as root" 1>&2
+        exit 1
+    fi
+
+    if [ ! -f "${BILIUP_DIR}/install.sh" ]; then
+        wget -O ${BILIUP_DIR}/install.sh https://image.biliup.me/install.sh && chmod +x ${BILIUP_DIR}/install.sh && bash ${BILIUP_DIR}/install.sh
         echo -e "biliup完成：${green}安装命令已经运行${plain}"
     else
         echo -e "biliup完成：${green}安装命令已经存在${plain}"
     fi
 
-    if ! find /opt/biliup/ -name "*-linux.tar.xz" -print -quit | grep -q .; then
+    if ! find ${BILIUP_DIR}/ -name "*-linux.tar.xz" -print -quit | grep -q .; then
         echo "你的CPU架构是："
         echo -e "    （${red}默认${plain}）0: ${yellow}x86_64${plain}"
         echo -e "            Y: ${green}ARMx64${plain}"
         echo -e "            N: ${green} ARM${plain}"
         read -p "请输入[0/Y/N]：" arch_choice
-        if [[ -z "$arch_choice" || ! "$arch_choice" =~ [0-2] ]]; then
+        if [[ -z "$arch_choice" || ! "$arch_choice" =~ [0YN] ]]; then
             arch_choice=0
         fi
         if [ "$arch_choice" -eq 0 ]; then
-            cd /opt/biliup && wget ${url}github.com/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-x86_64-linux.tar.xz && tar -xf biliupR-v0.1.19-x86_64-linux.tar.xz && mv "/opt/biliup/biliupR-v0.1.19-x86_64-linux/biliup" "/opt/biliup/biliupR"
+            cd ${BILIUP_DIR} && wget ${url}github.com/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-x86_64-linux.tar.xz && tar -xf biliupR-v0.1.19-x86_64-linux.tar.xz && mv "${BILIUP_DIR}/biliupR-v0.1.19-x86_64-linux/biliup" "${BILIUP_DIR}/biliupR"
         elif [ "$arch_choice" -eq 1 ]; then
-            cd /opt/biliup && wget ${url}github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-aarch64-linux.tar.xz && tar -xf biliupR-v0.1.19-aarch64-linux.tar.xz && mv "/opt/biliup/biliupR-v0.1.19-aarch64-linux/biliup" "/opt/biliup/biliupR"
+            cd ${BILIUP_DIR} && wget ${url}github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-aarch64-linux.tar.xz && tar -xf biliupR-v0.1.19-aarch64-linux.tar.xz && mv "${BILIUP_DIR}/biliupR-v0.1.19-aarch64-linux/biliup" "${BILIUP_DIR}/biliupR"
         else
-            cd /opt/biliup && wget ${url}github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-arm-linux.tar.xz && tar -xf biliupR-v0.1.19-arm-linux.tar.xz && mv "/opt/biliup/biliupR-v0.1.19-arm-linux/biliup" "/opt/biliup/biliupR"
+            cd ${BILIUP_DIR} && wget ${url}github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-arm-linux.tar.xz && tar -xf biliupR-v0.1.19-arm-linux.tar.xz && mv "${BILIUP_DIR}/biliupR-v0.1.19-arm-linux/biliup" "${BILIUP_DIR}/biliupR"
         fi
         echo -e "biliup-rs完成：${green}已经下载${plain}"
     else
@@ -49,12 +56,13 @@ install_biliup() {
     fi
 }
 
-# 检查/opt/biliup是否存在，如果不存在则创建
-if [ ! -d "/opt/biliup" ]; then
-    mkdir /opt/biliup
+
+# 检查${BILIUP_DIR}是否存在，如果不存在则创建
+if [ ! -d "${BILIUP_DIR}" ]; then
+    mkdir ${BILIUP_DIR}
 fi
 
-echo -e "录播文件和日志储存在 ${green}/opt/biliup${plain}"
+echo -e "录播文件和日志储存在${green} ${BILIUP_DIR} ${plain}"
 
 # 检查biliup是否正在运行
 if pgrep -f "biliup" > /dev/null; then
@@ -63,14 +71,14 @@ if pgrep -f "biliup" > /dev/null; then
         rerun=0
     fi
     if [ "$rerun" = "y" ]; then
-        pkill -f "biliup" ; rm -f "/opt/biliup/watch_process.pid" 
+        pkill -f "biliup" ; rm -f "${BILIUP_DIR}/watch_process.pid" 
         echo -e "${green}已经杀死biliup程，将重新运行biliup${plain}"
         install_biliup
     else
         echo -e "${red}取消重新启动biliup${plain}"
         read -p "biliup 已运行 你希望新增一个biliup进程吗？[Y/N]："  addnew
         if [ "$addnew" = "y" ]; then
-            pkill -f "biliup" ; rm -f "/opt/biliup/watch_process.pid" 
+            pkill -f "biliup" ; rm -f "${BILIUP_DIR}/watch_process.pid" 
             echo -e "将${green}新增${plain}一个biliup进程"
         else
             echo -e "${red}退出脚本${plain}"
@@ -85,14 +93,14 @@ fi
 python_version=$(python3 --version | cut -d " " -f2)
 
 # 使用sort命令和版本比较来决定使用哪个pip命令
-if printf '3.11\n%s' "$version" | sort -V | head -n1 | grep -q '3.11'; then
-    echo -e "Python3的版本是${yellow} $version ${plain}, 使用${green}pip install --break-system-packages${plain} 来安装..."
-    pip_install_cmd="pip3 install -i $pipSource --break-system-packages"
-    python3_install_cmd="-i $pipSource --break-system-packages"
+if printf '3.11\n%s' "$python_version" | sort -V | head -n1 | grep -q '3.11'; then
+    echo -e "Python3的版本是${yellow} $python_version ${plain}, 使用${green}pip install --break-system-packages${plain} 来安装..."
+    pip_install_cmd="pip3 install -i $pipsource --break-system-packages"
+    python3_install_cmd="-i $pipsource --break-system-packages"
 else
-    echo -e "Python3的版本是${yellow} $version ${plain}, 使用标准${green} pip install ${plain}来安装..."
-    pip_install_cmd="pip3 install -i $pipSource"
-    python3_install_cmd="-i $pipSource"
+    echo -e "Python3的版本是${yellow} $python_version ${plain}, 使用标准${green} pip install ${plain}来安装..."
+    pip_install_cmd="pip3 install -i $pipsource"
+    python3_install_cmd="-i $pipsource"
 fi
 
 echo -n "检查biliup版本中，请等待"
@@ -149,20 +157,20 @@ if [ -n "$official_version" ] && [ "$local_version" != "$official_version" ]; th
 fi
     
 # 登录biliup-rs
-if [ ! -f "/opt/biliup/cookies.json" ]; then
+if [ ! -f "${BILIUP_DIR}/cookies.json" ]; then
     read -p "未登录B站（cookier.json不存在）推荐使用扫码登录，是否登录？[Y/N]：" choice
     if [ -z "$choice" ]; then
         choice=y
     fi
     if [ "$choice" = "y" ]; then
-        sudo bash -c "/opt/biliup/biliupR login"
-        if [ -f "/opt/biliup/cookies.json" ]; then
+        sudo bash -c "${BILIUP_DIR}/biliupR login"
+        if [ -f "${BILIUP_DIR}/cookies.json" ]; then
             echo -e "已从biliup-rs获取${yellow}cookie${red} 泄露会被盗登B站${plain}"
         else
-            echo -e "未登录biliup-rs 请控制台手动执行 ${red}/opt/biliup/biliupR login${plain}"
+            echo -e "未登录biliup-rs 请控制台手动执行${red} ${BILIUP_DIR}/biliupR login${plain}"
         fi
     else
-        echo -e "cookie是登录B站所需 如上传请控制台手动执行 ${red}/opt/biliup/biliupR login${plain}"
+        echo -e "cookie是登录B站所需 如上传请控制台手动执行${red} ${BILIUP_DIR}/biliupR login${plain}"
     fi
 fi
 
@@ -215,27 +223,27 @@ run_biliup() {
             rrun=y
         fi
         if [ "$rrun" = "y" ]; then
-            echo -e "biliup v0.4.32以下 请到${red} /opt/biliup/config.toml ${plain}进行配置"
-            curl -L "${url}raw.githubusercontent.com/biliup/biliup/master/public/config.toml" -o "/opt/biliup/config.toml"
+            echo -e "biliup v0.4.32以下 请到${red} ${BILIUP_DIR}/config.toml ${plain}进行配置"
+            curl -L "${url}raw.githubusercontent.com/biliup/biliup/master/public/config.toml" -o "${BILIUP_DIR}/config.toml"
             if [ "$UserPassword" = "0" ]; then
-                sudo bash -c "cd /opt/biliup && biliup --http -P $UserPort start"
+                sudo bash -c "cd ${BILIUP_DIR} && biliup --http -P $UserPort start"
             else
-                sudo bash -c "cd /opt/biliup && biliup --http -P $UserPort --password '$UserPassword' start"
+                sudo bash -c "cd ${BILIUP_DIR} && biliup --http -P $UserPort --password '$UserPassword' start"
             fi
         else
-            echo -e "biliup v0.4.32以下 请到${red} /opt/biliup/config.toml ${plain}进行配置"
-            curl -L "${url}raw.githubusercontent.com/biliup/biliup/master/public/config.toml" -o "/opt/biliup/config.toml"
+            echo -e "biliup v0.4.32以下 请到${red} ${BILIUP_DIR}/config.toml ${plain}进行配置"
+            curl -L "${url}raw.githubusercontent.com/biliup/biliup/master/public/config.toml" -o "${BILIUP_DIR}/config.toml"
             if [ "$UserPassword" = "0" ]; then
-                sudo bash -c "cd /opt/biliup && biliup -P $UserPort start"
+                sudo bash -c "cd ${BILIUP_DIR} && biliup -P $UserPort start"
             else
-                sudo bash -c "cd /opt/biliup && biliup -P $UserPort --password '$UserPassword' start"
+                sudo bash -c "cd ${BILIUP_DIR} && biliup -P $UserPort --password '$UserPassword' start"
             fi
         fi   
     else
         if [ "$UserPassword" = "0" ]; then
-            sudo bash -c "cd /opt/biliup && biliup -P $UserPort start"
+            sudo bash -c "cd ${BILIUP_DIR} && biliup -P $UserPort start"
         else
-            sudo bash -c "cd /opt/biliup && biliup -P $UserPort --password '$UserPassword' start"
+            sudo bash -c "cd ${BILIUP_DIR} && biliup -P $UserPort --password '$UserPassword' start"
         fi   
     fi
 }
@@ -249,16 +257,16 @@ rm_biliup() {
     else
         echo -e "biliup已运行请至浏览器配置WEBUI  ${green}http://[$(curl -s 6.ipw.cn)]:$UserPort${plain}"
     fi
-    if [ -f "/opt/biliup/install.sh" ]
+    if [ -f "${BILIUP_DIR}/install.sh" ]
     then
         read -p  "你希望清理安装包吗？回车默认清理[Y/N]：" rerun
         if [ -z "$rerun" ]; then
             rerun=y
         fi
         if [ "$rerun" = "y" ]; then
-            rm -f /opt/biliup/biliupR-v0.1.19-*-linux.tar.xz
-            rm -rf /opt/biliup/biliupR-v0.1.19-*-linux
-            rm -f /opt/biliup/install.sh 
+            rm -f ${BILIUP_DIR}/biliupR-v0.1.19-*-linux.tar.xz
+            rm -rf ${BILIUP_DIR}/biliupR-v0.1.19-*-linux
+            rm -f ${BILIUP_DIR}/install.sh 
             echo -e "${green}已清理安装包,biliu启动成功${plain}"
         fi
     fi
@@ -268,8 +276,8 @@ rm_biliup() {
 if pgrep -f "biliup" > /dev/null; then
     rm_biliup
 else
-    if [ -f "/opt/biliup/watch_process.pid" ]; then 
-        rm -f "/opt/biliup/watch_process.pid" ; run_biliup
+    if [ -f "${BILIUP_DIR}/watch_process.pid" ]; then 
+        rm -f "${BILIUP_DIR}/watch_process.pid" ; run_biliup
     else
         run_biliup
     fi
