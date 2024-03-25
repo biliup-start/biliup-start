@@ -9,7 +9,7 @@
 ![image](https://github.com/ikun1993/biliupstart/assets/96544807/7939d577-e910-4d0f-a40c-002f1adeba6b)
 
 **如果已安装Python3**：
-**先按照** pip install -r requirements.txt
+**先安装库** pip install -r requirements.txt
 
 Windows版：
 https://github.com/ikun1993/biliupstart/releases/latest/download/biliup.start.py
