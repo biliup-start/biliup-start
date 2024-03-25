@@ -15,7 +15,21 @@ if not exist %UserDrive%:\ (
     echo 错误: 没有找到你选择的 %UserDrive%盘 请到我的电脑中查看正确盘符
     goto inputDrive
 )
-echo 你录播文件和日志在 %UserDrive%:\opt\biliup
+set BILIUP_DIR="\opt\biliup"
+echo 你录播文件和日志在 %UserDrive%:%BILIUP_DIR%
+
+for /f %%b in ('curl -s https://ipinfo.io/country') do (
+    set CountryCode=%%b
+)
+if "%CountryCode%"=="CN" (
+    set biliupgithub=https://j.iokun.top/https://github.com
+    set pipsource=https://pypi.tuna.tsinghua.edu.cn/simple
+    echo 你的 IP 归属地是中国，将使用清华源安装 Python 库和 github 代理下载。
+) else (
+    set biliupgithub=https://github.com
+    set pipsource=https://pypi.org/simple
+    echo 你的 IP 归属地不是中国，将使用默认源安装 Python 库和 github 下载。
+)
 
 where python >nul 2>nul
 if %errorlevel% neq 0 (
@@ -24,15 +38,15 @@ if %errorlevel% neq 0 (
 )
 
 echo 检查biliup版本...
-for /f "tokens=2 delims= " %%i in ('pip3 show biliup ^| findstr Version') do set biliversion=%%i
-for /f "tokens=2 delims= " %%i in ('yolk -V biliup 2^>nul') do set pipversion=%%i
+for /f "tokens=2 delims= " %%i in ('pip show biliup ^| findstr Version') do set biliversion=%%i
+for /f "tokens=2 delims= " %%i in ('yolk -H "%pipsource%" -V biliup 2^>nul') do set pipversion=%%i
 
 if not defined pipversion (
     echo 查询最新版本失败，正在尝试安装 yolk3k...
-    powershell -Command "Start-Process -FilePath 'pip3' -ArgumentList 'install yolk3k' -Verb RunAs -Wait"
-    for /f "tokens=2 delims= " %%i in ('yolk -V biliup 2^>nul') do set pipversion=%%i
+    powershell -Command "Start-Process -FilePath 'pip' -ArgumentList 'install -i "%pipsource%" yolk3k' -Verb RunAs -Wait"
+    for /f "tokens=2 delims= " %%i in ('yolk -H "%pipsource%" -V biliup 2^>nul') do set pipversion=%%i
     if not defined pipversion (
-        echo 检查库中版本失败 如需更新手动终端输入 pip3 install -U biliup ...
+        echo 检查库中版本失败 如需更新手动终端输入 pip install -i "%pipsource%" -U biliup ...
         set pipversion=%biliversion%
     )
 ) 
@@ -50,10 +64,10 @@ if defined biliversion (
         set /p UserUpdate="biliup版本过低，按任意键更新? [如不需要请关闭停用脚本]："
 
         if "%UserUpdate%"=="" (
-            powershell -Command "Start-Process -FilePath 'pip3' -ArgumentList 'install -U biliup' -Verb RunAs -Wait"
+            powershell -Command "Start-Process -FilePath 'pip' -ArgumentList 'install -i "%pipsource%" -U biliup' -Verb RunAs -Wait"
             echo 已更新版本 v%pipversion% 
         ) else (
-            echo 失败最新 v%pipversion% ，如需更新手动终端输入 pip3 install -U biliup 
+            echo 失败最新 v%pipversion% ，如需更新手动终端输入 pip install -i "%pipsource%" -U biliup 
         )
     )
 )
@@ -61,19 +75,19 @@ if defined biliversion (
 :end
 if not defined biliversion (
     echo 未运行过脚本 开始执行安装
-    echo 正在创建运行目录 %UserDrive%:\opt\biliup...
-    mkdir %UserDrive%:\opt\biliup
+    echo 正在创建运行目录 %UserDrive%:%BILIUP_DIR%...
+    mkdir %UserDrive%:%BILIUP_DIR%
 
     echo 删除可能存在的 chocolatey 目录...
-    if exist C:\opt\biliup\biliupR-v0.1.19-x86_64-windows (
-        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c rmdir /s /q C:\ProgramData\chocolatey' -Verb RunAs"
+    if exist %UserDrive%:%BILIUP_DIR%\biliupR-v0.1.19-x86_64-windows (
+        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c rmdir /s /q %UserDrive%:%BILIUP_DIR%\biliupR-v0.1.19-x86_64-windows' -Verb RunAs"
         echo 删除 biliupR-v0.1.19-x86_64-windows 目录成功
     )
 
     echo 检查 windowsbiliup.bat 是否存在 如存在进行下一步...
     if not exist %~dp0\windowsbiliup.bat (
         echo 正在下载 windowsbiliup.bat...
-        powershell -Command "Invoke-WebRequest -Uri 'https://blrec.iokun.top/d/189/windowsbiliup.bat?sign=WFofEtv2yAG3tO4WvAJCaWiLzHx1elLMdTMCPkP_y70=:0' -OutFile 'windowsbiliup.bat'"
+        powershell -Command "Invoke-WebRequest -Uri '%biliupgithub%/ikun1993/biliupstart/releases/download/biliupstart/windowsbiliup.bat' -OutFile 'windowsbiliup.bat'"
     )
 
     echo 以管理员身份运行 windowsbiliup.bat...
@@ -82,12 +96,12 @@ if not defined biliversion (
     echo 检查 biliupR-v0.1.19-x86_64-windows.zip 是否存在 如存在进行下一步...
     if not exist %~dp0\biliupR-v0.1.19-x86_64-windows.zip (
         echo 正在下载 biliupR-v0.1.19-x86_64-windows.zip...
-        powershell -Command "Invoke-WebRequest -Uri 'https://j.iokun.top/https://github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-x86_64-windows.zip' -OutFile 'biliupR-v0.1.19-x86_64-windows.zip'"
+        powershell -Command "Invoke-WebRequest -Uri '%biliupgithub%/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-x86_64-windows.zip' -OutFile 'biliupR-v0.1.19-x86_64-windows.zip'"
     )
 
-    echo 正在将 biliupR-v0.1.19-x86_64-windows.zip 解压到 %UserDrive%:\opt\biliup...
-    powershell -Command "Expand-Archive -Path '%~dp0\biliupR-v0.1.19-x86_64-windows.zip' -DestinationPath '%UserDrive%:\opt\biliup' -Force"
-    powershell -Command "Move-Item -Path '%UserDrive%:\opt\biliup\biliupR-v0.1.19-x86_64-windows\biliup.exe' -Destination '%UserDrive%:\opt\biliup\biliupR.exe'"
+    echo 正在将 biliupR-v0.1.19-x86_64-windows.zip 解压到 %UserDrive%:%BILIUP_DIR%...
+    powershell -Command "Expand-Archive -Path '%~dp0\biliupR-v0.1.19-x86_64-windows.zip' -DestinationPath '%UserDrive%:%BILIUP_DIR%' -Force"
+    powershell -Command "Move-Item -Path '%UserDrive%:%BILIUP_DIR%\biliupR-v0.1.19-x86_64-windows\biliup.exe' -Destination '%UserDrive%:%BILIUP_DIR%\biliupR.exe'"
 
     echo 删除可能存在的 windowsbiliup.bat...
     if exist %~dp0\windowsbiliup.bat (
@@ -102,30 +116,30 @@ if not defined biliversion (
     )
 
     echo 删除可能存在的 biliupR-v0.1.19-x86_64-windows 目录...
-    if exist %UserDrive%:\opt\biliup\biliupR-v0.1.19-x86_64-windows (
-        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c rmdir /s /q %UserDrive%:\opt\biliup\biliupR-v0.1.19-x86_64-windows' -Verb RunAs"
+    if exist %UserDrive%:%BILIUP_DIR%\biliupR-v0.1.19-x86_64-windows (
+        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c rmdir /s /q %UserDrive%:%BILIUP_DIR%\biliupR-v0.1.19-x86_64-windows' -Verb RunAs"
         echo 删除 biliupR-v0.1.19-x86_64-windows 目录成功
     )
 )
 
 echo 检查 cookies.json 是否存在（B站是否登录）...
-if not exist %UserDrive%:\opt\biliup\cookies.json (
+if not exist %UserDrive%:%BILIUP_DIR%\cookies.json (
     echo cookies.json 不存在正在登录B站（推荐扫码）...
-    cd %UserDrive%:\opt\biliup
+    cd %UserDrive%:%BILIUP_DIR%
     .\biliupR.exe login
 )
 
 timeout /t 3 /nobreak >nul
 
-if exist %UserDrive%:\opt\biliup\cookies.json (
-    if exist %UserDrive%:\opt\biliup\qrcode.png (
-        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c del %UserDrive%:\opt\biliup\qrcode.png' -Verb RunAs"    
+if exist %UserDrive%:%BILIUP_DIR%\cookies.json (
+    if exist %UserDrive%:%BILIUP_DIR%\qrcode.png (
+        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c del %UserDrive%:%BILIUP_DIR%\qrcode.png' -Verb RunAs"    
         echo 登录成功 删除登录二维码图片
     )else (
         echo 登录成功或 cookies.json 文件已存在
     )
 ) else (
-    echo 登录失败 请打开终端输入 %UserDrive%:\opt\biliup\biliupR.exe login 手动登录
+    echo 登录失败 请打开终端输入 %UserDrive%:%BILIUP_DIR%\biliupR.exe login 手动登录
 )
 
 timeout /t 5 /nobreak >nul
@@ -178,7 +192,7 @@ if "%UserPassword%"=="" (
 )
 
 echo 正在启动biliup 运行成功后10秒自动为你打开webui配置端...
-cd %UserDrive%:\opt\biliup
+cd %UserDrive%:%BILIUP_DIR%
 if "%UserPassword%"=="" (
     start /B biliup -P %UserInput% start
     timeout /t 11 /nobreak >nul
