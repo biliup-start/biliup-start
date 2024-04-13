@@ -1,92 +1,214 @@
 @echo off
-setlocal enabledelayedexpansion
 
-:: 获取用户输入的操作类型，如果不是1（追加），则默认为0（上传）
-set /p OPERATION_TYPE="根据情况选择0:上传 1:追加投稿[0/1]: "
-if not "%OPERATION_TYPE%"=="0" if not "%OPERATION_TYPE%"=="1" (
-    set OPERATION_TYPE=0
-    echo 输入错误，自动选择 0:上传
+:inputDrive
+set UserDrive=
+set /p UserDrive="请输入你想录播的盘符（默认为C盘）："
+if "%UserDrive%"=="" (
+    set UserDrive=C
+)
+echo %UserDrive%| findstr /R "^[a-zA-Z]*$" > nul
+if %errorlevel%==1 (
+    echo 错误: 你输入的不是字母，请重新输入。
+    goto inputDrive
+)
+if not exist %UserDrive%:\ (
+    echo 错误: 没有找到你选择的 %UserDrive%盘 请到我的电脑中查看正确盘符
+    goto inputDrive
+)
+set BILIUP_DIR=\opt\biliup
+echo 你录播文件和日志在 %UserDrive%:%BILIUP_DIR%
+
+for /f %%b in ('curl -s https://ipinfo.io/country') do (
+    set CountryCode=%%b
+)
+if "%CountryCode%"=="CN" (
+    set biliupgithub=https://j.iokun.top/https://
+    set pipsource=https://pypi.tuna.tsinghua.edu.cn/simple
+    echo 你的 IP 归属地是中国，将使用清华源安装 Python 库和 github 代理下载。
 ) else (
-    if "%OPERATION_TYPE%"=="1" (
-        echo 选择了 %OPERATION_TYPE%:追加投稿
+    set biliupgithub=https://
+    set pipsource=https://pypi.org/simple
+    echo 你的 IP 归属地不是中国，将使用默认源安装 Python 库和 github 下载。
+)
+
+where python >nul 2>nul
+if %errorlevel% neq 0 (
+    echo 未安装 python
+    goto end
+)
+
+echo 检查biliup版本...
+for /f "tokens=2 delims= " %%i in ('pip show biliup ^| findstr Version') do set biliversion=%%i
+for /f "tokens=2 delims= " %%i in ('yolk -H "%pipsource%" -V biliup 2^>nul') do set pipversion=%%i
+
+if not defined pipversion (
+    echo 查询最新版本失败，正在尝试安装 yolk3k...
+    powershell -Command "Start-Process -FilePath 'pip' -ArgumentList 'install -i "%pipsource%" yolk3k' -Verb RunAs -Wait"
+    for /f "tokens=2 delims= " %%i in ('yolk -H "%pipsource%" -V biliup 2^>nul') do set pipversion=%%i
+    if not defined pipversion (
+        echo 检查库中版本失败 如需更新手动终端输入 pip install -i "%pipsource%" -U biliup ...
+        set pipversion=%biliversion%
+    )
+) 
+
+if defined biliversion (
+    if "%pipversion%"=="%biliversion%" (
+        echo 当前运行版本 v%biliversion%
     ) else (
-        echo 选择了 %OPERATION_TYPE%:上传
+        echo 当前最新版本 v%pipversion%
     )
-)
 
-:: 定义目录和允许的文件类型
-set BILIUP_DIR=C:\opt\biliup
-set ALLOWED_TYPES=mp4 flv avi wmv mov webm mpeg4 ts mpg rm rmvb mkv
+    echo 查询库中可用版本 如最新跳过...
 
-:: 获取用户输入的文件类型并检查是否在允许的类型中
-:file_type_loop
-set /p FILE_TYPE="请输入视频格式（例如：flv）: "
-set FOUND=0
-for %%t in (%ALLOWED_TYPES%) do (
-    if /I "%%t"=="%FILE_TYPE%" (
-        set FOUND=1
-        goto end_loop
-    )
-)
-:end_loop
-if %FOUND%==0 goto file_type_loop
-
-:: 获取用户输入的需要上传文件的目录
-:directory_loop
-set /p OUTPUT_BASE="输入上传文件的目录（例如：C:\）: "
-if not exist "%OUTPUT_BASE%" goto directory_loop
-
-:: 查找指定目录中所有符合输入文件类型的文件
-set file_count=0
-for %%G in ("%OUTPUT_BASE%\\*.%FILE_TYPE%") do (
-    set /A file_count+=1
-    set files=!files! "%%~G"
-)
-
-:: 检查是否找到了文件
-if not defined files (
-    echo 没有找到文件
-    call :exit_script
-)
-
-:: 获取国家代码
-for /f "tokens=* USEBACKQ" %%F in (`curl -s https://ipinfo.io/country`) do (
-    set "country_code=%%F"
-)
-
-:: 根据操作类型上传文件或追加到现有视频
-echo 上传 %file_count% 个文件
-cd %BILIUP_DIR% 
-if "%OPERATION_TYPE%"=="0" (
-    set /p UPLOAD_TAG="请输入上传标签: "
-    if "%UPLOAD_TAG%"=="" (
-        set UPLOAD_TAG=biliup
-        echo 未输入默认 biliup 标签
-    )
-    if "%country_code%"=="CN" (
-        .\biliupR.exe upload !files! --tag !UPLOAD_TAG! --limit 99
-    ) else (
-        .\biliupR.exe upload !files! --tag !UPLOAD_TAG! --line ws --limit 99
-    )
-) else (
-    :bv_number_loop
-    set /p OPERATIONFILE_TYPE="请输入追加稿件的BV号（例如：BV1fr42147Re）: "
-    if not defined OPERATIONFILE_TYPE goto bv_number_loop
-    echo %OPERATIONFILE_TYPE% | findstr /R "^BV[a-zA-Z0-9]*$" >nul 2>&1
-    if not errorlevel 1 (
-        goto bv_number_loop
-    ) else (
-        if "%country_code%"=="CN" (
-            .\biliupR.exe append --vid !OPERATIONFILE_TYPE! !files! --limit 99
+    if not "%pipversion%"=="%biliversion%" (
+        choice /C YN /M "biliup版本过低，是否更新："
+        if errorlevel 2 (
+            if not exist %UserDrive%:%BILIUP_DIR%\config.toml (
+                 echo 下载config.toml 请到 %UserDrive%:%BILIUP_DIR% 进行配置config.toml
+                 powershell -Command "Invoke-WebRequest -Uri '%biliupgithub%raw.githubusercontent.com/biliup/biliup/master/public/config.toml' -OutFile '%UserDrive%:%BILIUP_DIR%\config.toml'"
+             )
+            echo 当前运行版本 v%biliversion%
         ) else (
-            .\biliupR.exe append --vid !OPERATIONFILE_TYPE! !files! --line ws --limit 99
+            powershell -Command "Start-Process -FilePath 'pip' -ArgumentList 'install -i "%pipsource%" -U biliup' -Verb RunAs -Wait"
+            echo 已更新版本 v%pipversion% 
         )
     )
 )
 
-:: 定义退出脚本的子程序
-:exit_script
-echo 运行结束按任意键退出...
-pause >nul
-exit /b
-	
+:end
+if not defined biliversion (
+    echo 未运行过脚本 开始执行安装
+    echo 正在创建运行目录 %UserDrive%:%BILIUP_DIR%...
+    mkdir %UserDrive%:%BILIUP_DIR%
+
+    echo 删除可能存在的 chocolatey 目录...
+    if exist C:\ProgramData\chocolatey (
+        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c rmdir /s /q C:\ProgramData\chocolatey' -Verb RunAs"
+        echo 删除 biliupR-v0.1.19-x86_64-windows 目录成功
+    )
+
+    echo 检查 windowsbiliup.bat 是否存在 如存在进行下一步...
+    if not exist %~dp0\windowsbiliup.bat (
+        echo 正在下载 windowsbiliup.bat...
+        powershell -Command "Invoke-WebRequest -Uri '%biliupgithub%github.com/ikun1993/biliupstart/releases/download/biliupstart/windowsbiliup.bat' -OutFile 'windowsbiliup.bat'"
+    )
+
+    echo 以管理员身份运行 windowsbiliup.bat...
+    powershell -Command "Start-Process -FilePath 'windowsbiliup.bat' -Verb RunAs -Wait"
+
+    echo 检查 biliupR-v0.1.19-x86_64-windows.zip 是否存在 如存在进行下一步...
+    if not exist %~dp0\biliupR-v0.1.19-x86_64-windows.zip (
+        echo 正在下载 biliupR-v0.1.19-x86_64-windows.zip...
+        powershell -Command "Invoke-WebRequest -Uri '%biliupgithub%github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-x86_64-windows.zip' -OutFile 'biliupR-v0.1.19-x86_64-windows.zip'"
+    )
+
+    echo 正在将 biliupR-v0.1.19-x86_64-windows.zip 解压到 %UserDrive%:%BILIUP_DIR%...
+    powershell -Command "Expand-Archive -Path '%~dp0\biliupR-v0.1.19-x86_64-windows.zip' -DestinationPath '%UserDrive%:%BILIUP_DIR%' -Force"
+    powershell -Command "Move-Item -Path '%UserDrive%:%BILIUP_DIR%\biliupR-v0.1.19-x86_64-windows\biliup.exe' -Destination '%UserDrive%:%BILIUP_DIR%\biliupR.exe'"
+
+    echo 删除可能存在的 windowsbiliup.bat...
+    if exist %~dp0\windowsbiliup.bat (
+        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c del %~dp0\windowsbiliup.bat' -Verb RunAs"
+        echo 删除 windowsbiliup.bat成功
+    )
+
+    echo 删除可能存在的 biliupR-v0.1.19-x86_64-windows.zip...
+    if exist %~dp0\biliupR-v0.1.19-x86_64-windows.zip (
+        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c del %~dp0\biliupR-v0.1.19-x86_64-windows.zip' -Verb RunAs"
+        echo 删除 biliupR-v0.1.19-x86_64-windows.zip成功
+    )
+
+    echo 删除可能存在的 biliupR-v0.1.19-x86_64-windows 目录...
+    if exist %UserDrive%:%BILIUP_DIR%\biliupR-v0.1.19-x86_64-windows (
+        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c rmdir /s /q %UserDrive%:%BILIUP_DIR%\biliupR-v0.1.19-x86_64-windows' -Verb RunAs"
+        echo 删除 biliupR-v0.1.19-x86_64-windows 目录成功
+    )
+)
+
+echo 检查 cookies.json 是否存在（B站是否登录）...
+if not exist %UserDrive%:%BILIUP_DIR%\cookies.json (
+    echo cookies.json 不存在正在登录B站（推荐扫码）...
+    cd %UserDrive%:%BILIUP_DIR%
+    .\biliupR.exe login
+)
+
+timeout /t 3 /nobreak >nul
+
+if exist %UserDrive%:%BILIUP_DIR%\cookies.json (
+    if exist %UserDrive%:%BILIUP_DIR%\qrcode.png (
+        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c del %UserDrive%:%BILIUP_DIR%\qrcode.png' -Verb RunAs"    
+        echo 登录成功 删除登录二维码图片
+    )else (
+        echo 登录成功或 cookies.json 文件已存在
+    )
+) else (
+    echo 登录失败 请打开终端输入 %UserDrive%:%BILIUP_DIR%\biliupR.exe login 手动登录
+)
+
+timeout /t 5 /nobreak >nul
+
+setlocal enabledelayedexpansion
+set "ForbiddenPorts=0 1 7 9 11 13 15 17 19 20 21 22 23 25 37 42 43 53 77 79 87 95 101 102 103 104 109 110 111 113 115 117 119 123 135 139 143 179 389 465 512 513 514 515 526 530 531 532 540 556 563 587 601 636 993 995 2049 3659 4045 6000 6665 6666 6667 6668 6669 137 139 445 593 1025 2745 3127 6129 3389"
+:input
+set UserInput=
+set /p UserInput="请输入一个小于65535端口(回车默认19159)："
+if "%UserInput%"=="" (
+    set UserInput=19159
+)
+echo %UserInput%| findstr /R "^[0-9][0-9]*$" > nul
+if %errorlevel%==1 (
+    echo 错误: 你输入的不是数字，请重新输入。
+    goto input
+)
+for %%i in (%ForbiddenPorts%) do (
+    if %UserInput% equ %%i (
+        echo 错误: 端口 %UserInput% 被禁用，请重新输入。
+        goto input
+    )
+)
+set num=%UserInput%
+set len=0
+:loop
+if defined num (
+    set /A len+=1
+    set num=%num:~1%
+    goto loop
+)
+if %len% GTR 5 (
+    echo 错误: 你输入的数字超过了5位，请重新输入。
+    goto input
+)
+if %UserInput% GTR 65535 (
+    echo 错误: 你输入的数字超过了65535，请重新输入。
+    goto input
+)
+netstat -aon | findstr /R /C:"^  TCP    [0-9.]*:%UserInput% " >nul
+if %errorlevel%==0 (
+    echo 错误: 端口 %UserInput% 已被占用，请重新输入。
+    goto input
+)
+echo 你输入的端口是 %UserInput%
+
+set /p UserPassword="请输入密码(回车不使用密码)："
+if "%UserPassword%"=="" (
+    echo 未启用密码公网不推荐 持续运行biliup需保持当前窗口存在
+)
+
+echo 正在启动biliup 运行成功后10秒自动为你打开webui配置端...
+for /f "tokens=2 delims= " %%i in ('pip show biliup ^| findstr Version') do set biliupversion=%%i
+set biliupversion="%biliupversion:.=%"
+set HTTP_FLAG=
+if "0431" lss "%biliupversion%" (
+    set HTTP_FLAG=--http
+)
+cd %UserDrive%:%BILIUP_DIR%
+if "%UserPassword%"=="" (
+    start /B biliup -P %UserInput% %HTTP_FLAG% start
+    timeout /t 11 /nobreak >nul
+    start http://localhost:%UserInput%
+) else (
+    echo 账号：biliup 密码：%UserPassword% 持续运行biliup需保持当前窗口存在
+    start /B biliup -P %UserInput% --password %UserPassword% %HTTP_FLAG% start
+    timeout /t 11 /nobreak >nul
+    start http://localhost:%UserInput%
+)
