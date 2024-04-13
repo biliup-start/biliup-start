@@ -8,6 +8,8 @@
 ![image](https://github.com/ikun1993/biliupstart/assets/96544807/1097ed4a-3920-431d-afb0-fe827b24757c)
 ![image](https://github.com/ikun1993/biliupstart/assets/96544807/7939d577-e910-4d0f-a40c-002f1adeba6b)
 
+**国内**请在`https://github.com/` 前面**添加** `https://j.iokun.top/` 比如**加速**下载 `https://j.iokun.top/https://github.com/`
+
 **如果已安装Python3**：
 **先安装库** pip install -r requirements.txt
 
