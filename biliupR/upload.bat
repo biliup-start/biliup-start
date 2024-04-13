@@ -1,46 +1,44 @@
-@echo off
-setlocal enabledelayedexpansion
+#!/bin/bash
 
-::  定义目录，biliupR和视频文件目录
-set BILIUP_DIR=C:\opt\biliup
-set OUTPUT_BASE=C:\Users\94623\Videos
+BILIUP_DIR=/opt/biliup
+ALLOWED_TYPES="mp4 flv avi wmv mov webm mpeg4 ts mpg rm rmvb mkv"
 
-::  获取国家代码
-for /f "tokens=* USEBACKQ" %%F in (`curl -s https://ipinfo.io/country`) do (
-    set "country_code=%%F"
-)
+read -p "根据情况选择0:上传 1:追加投稿[0/1]: " OPERATION_TYPE
+if ! [[ "$OPERATION_TYPE" =~ ^[0-9]+$ ]] || [ "$OPERATION_TYPE" -ne 1 ]; then
+  OPERATION_TYPE=0
+  echo "未输入或输入非1，自动选择 0:上传"
+else
+  echo "选择了 ${OPERATION_TYPE}:上传"
+fi
 
-::  检查国家代码是否为 CN
-if "%country_code%"=="CN" (
-    set "url=qn"
-) else (
-    set "url=ws"
-)
+while [[ ! " $ALLOWED_TYPES " =~ " $FILE_TYPE " ]]; do
+  read -p "请输入文件类型（例如：flv）: " FILE_TYPE
+done
 
-::  创建一个空字符串来存储文件路径
-set files=
+while [[ ! "$OUTPUT_BASE" = /* ]]; do
+  read -p "请输入需要上传文件的目录: " OUTPUT_BASE
+done
 
-::  查找所有符合条件的文件，并将它们的路径添加到字符串中
-for /R "%OUTPUT_BASE%" %%G in (*.mp4) do (
-    set files=!files! "%%G"
-)
+IFS=$'\n'
+files=($(find "$OUTPUT_BASE" -name "*.$FILE_TYPE"))
+if [ ${#files[@]} -eq 0 ]; then
+  echo "没有找到文件"
+  exit 1
+fi
 
-::  检查是否找到了文件
-if not defined files (
-    echo 没有找到文件
-    pause
-    exit /b
-)
+country_code=$(curl -s https://ipinfo.io/country)
 
-::  计算文件数量
-set file_count=0
-for %%A in (!files!) do (
-    set /a file_count+=1
-)
-
-::  显示文件数量并上传文件
-echo 准备上传 !file_count! 个文件
-"%BILIUP_DIR%/biliupR" upload !files! --tag biliup --line %url% --limit 999
-
-pause
-cmd.exe
+echo "上传 ${#files[@]} 个文件"
+if [ "$OPERATION_TYPE" -eq 0 ]; then
+  read -p "请输入上传标签: " UPLOAD_TAG
+  UPLOAD_TAG=${UPLOAD_TAG:-biliup}
+  echo "选择了 ${UPLOAD_TAG} 标签"
+  line_option=($([ "$country_code" = "CN" ] || echo "--line ws"))
+  cd ${BILIUP_DIR} && ./biliupR upload "${files[@]}" --tag $UPLOAD_TAG --limit 99 "${line_option[@]}"
+else
+  while [[ ! $OPERATIONFILE_TYPE =~ ^(BV|AV)[a-zA-Z0-9]+$ ]]; do
+    read -p "请输入追加稿件的BV号（例如：BV1fr42147Re）: " OPERATIONFILE_TYPE
+  done
+  line_option=($([ "$country_code" = "CN" ] || echo "--line ws"))
+  cd ${BILIUP_DIR} && ./biliupR append --vid $OPERATIONFILE_TYPE "${files[@]}" --limit 99 "${line_option[@]}"
+fi
