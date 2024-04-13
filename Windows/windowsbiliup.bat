@@ -31,7 +31,7 @@ for /f %%b in ('curl -s https://ipinfo.io/country') do (
     set CountryCode=%%b
 )
 echo IP归属地: "%CountryCode%"
-if "CountryCode!"=="CN" (
+if "%CountryCode%"=="CN" (
     set pipSource="https://pypi.tuna.tsinghua.edu.cn/simple"
     echo 你的 IP 归属地是中国，将使用清华源安装 Python 库。
 ) else (
