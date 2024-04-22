@@ -18,6 +18,9 @@ fi
 
 # 全局工作目录
 BILIUP_DIR=/opt/biliup
+if [ ! -d "${BILIUP_DIR}" ]; then
+    mkdir ${BILIUP_DIR}
+fi
 cd ${BILIUP_DIR} 
 
 # 安装下载命令
@@ -56,11 +59,6 @@ install_biliup() {
         echo -e "biliup-rs完成：${green}已经存在${plain}"
     fi
 }
-
-# 检查${BILIUP_DIR}是否存在，如果不存在则创建
-if [ ! -d "${BILIUP_DIR}" ]; then
-    mkdir ${BILIUP_DIR}
-fi
 
 echo -e "录播文件和日志储存在${green} ${BILIUP_DIR} ${plain}"
 
