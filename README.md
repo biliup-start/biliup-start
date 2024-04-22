@@ -1,6 +1,6 @@
-**biliup项目**的一键安装：https://github.com/biliup/biliup
+**biliup项目**的一键启动：https://github.com/biliup/biliup
 
-支持**Windows**端和**debian**及其分支两个系统的**一键启动biliup脚本**
+支持**Windows**端和**debian**及其分支两个系统的
 
 套娃基于biliup社区一键安装脚本 https://biliup.me/d/34
 
