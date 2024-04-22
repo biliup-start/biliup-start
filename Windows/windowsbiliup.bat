@@ -30,33 +30,18 @@ setlocal
 for /f %%b in ('curl -s https://ipinfo.io/country') do (
     set CountryCode=%%b
 )
-echo IP归属地: "%CountryCode%"
+echo IP归属地: %CountryCode%
 if "%CountryCode%"=="CN" (
-    set pipSource="https://pypi.tuna.tsinghua.edu.cn/simple"
-    echo 你的 IP 归属地是中国，将使用清华源安装 Python 库。
+    set pipSource="https://mirrors.cernet.edu.cn/pypi/web/simple"
+    echo 你的 IP 归属地是中国，将使用三方源安装 Python 库。
 ) else (
     set pipSource="https://pypi.org/simple"
     echo 你的 IP 归属地不是中国，将使用默认源安装 Python 库。
 )
 
-echo 安装 yolk3k...
-pip install -i "%pipSource%" yolk3k
-for /f "tokens=2 delims= " %%i in ('yolk -H "%pipSource%" -V biliup 2^>nul') do set "pipversion=%%i"
-if not defined pipversion (
-    echo 检查库中版本失败 安装0.4.44 ...
-    set pipversion="0.4.44"
-)
-
-echo 最新版本是: %pipversion%
-set /p choice="是否安装WEBUI版本? (Y/N): "
-if /i "%choice%"=="N" (
-    set pipversion="0.4.31"
-)
-
 ::  安装 biliup
-pip install -i "%pipSource%" biliup==%pipversion%
+pip install -i "%pipSource%" biliup
 
 endlocal
 ::  输出完成信息
 echo 已完成全部安装
-pause
