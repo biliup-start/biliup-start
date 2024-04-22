@@ -1,4 +1,4 @@
-**biliup项目**：https://github.com/biliup/biliup
+**biliup项目**的一键安装：https://github.com/biliup/biliup
 
 支持**Windows**端和**debian**及其分支两个系统的**一键启动biliup脚本**
 
@@ -32,3 +32,5 @@ Linux版(debian)：
 
 `wget -O installb.sh https://github.com/ikun1993/biliupstart/releases/latest/download/start.sh && chmod +x installb.sh && bash installb.sh
 `
+
+注：如你手动已安装biliup 脚本可能存在不支持行为。
