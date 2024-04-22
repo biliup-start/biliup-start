@@ -1,92 +1,98 @@
-@echo off
-setlocal enabledelayedexpansion
+#!/bin/bash
 
-:: 获取用户输入的操作类型，如果不是1（追加），则默认为0（上传）
-set /p OPERATION_TYPE="根据情况选择0:上传 1:追加投稿[0/1]: "
-if not "%OPERATION_TYPE%"=="0" if not "%OPERATION_TYPE%"=="1" (
-    set OPERATION_TYPE=0
-    echo 输入错误，自动选择 0:上传
-) else (
-    if "%OPERATION_TYPE%"=="1" (
-        echo 选择了 %OPERATION_TYPE%:追加投稿
-    ) else (
-        echo 选择了 %OPERATION_TYPE%:上传
-    )
-)
+BILIUP_DIR=/opt/biliup
+ALLOWED_TYPES="mp4 flv avi wmv mov webm mpeg4 ts mpg rm rmvb mkv"
 
-:: 定义目录和允许的文件类型
-set BILIUP_DIR=C:\opt\biliup
-set ALLOWED_TYPES=mp4 flv avi wmv mov webm mpeg4 ts mpg rm rmvb mkv
+echo "请稍等正在检查biliupR文件(如存在直接进行下一步)..."
 
-:: 获取用户输入的文件类型并检查是否在允许的类型中
-:file_type_loop
-set /p FILE_TYPE="请输入视频格式（例如：flv）: "
-set FOUND=0
-for %%t in (%ALLOWED_TYPES%) do (
-    if /I "%%t"=="%FILE_TYPE%" (
-        set FOUND=1
-        goto end_loop
-    )
-)
-:end_loop
-if %FOUND%==0 goto file_type_loop
+country_code=$(curl -s https://ipinfo.io/country)
 
-:: 获取用户输入的需要上传文件的目录
-:directory_loop
-set /p OUTPUT_BASE="输入上传文件的目录（例如：C:\）: "
-if not exist "%OUTPUT_BASE%" goto directory_loop
+if ! find / -wholename "${BILIUP_DIR}/biliupR" -print -quit | grep -q .; then
+    cd ${BILIUP_DIR} 
+    if [ "$country_code" = "CN" ]; then
+        url="https://j.iokun.top/https://"
+    else
+        url="https://"
+    fi
+    echo "你的CPU架构是："
+    echo -e "    （\e[31m默认\033[0m）0: \e[33mx86_64\033[0m"
+    echo -e "            1: \033[0;32mARMa64\033[0m"
+    echo -e "            2: \033[0;32m ARM\033[0m"
+    read -p "请输入[0/1/2]：" arch_choice
+    if [[ -z "$arch_choice" || ! "$arch_choice" =~ [0-2] ]]; then
+        echo "你输入错误，使用默认 \e[33mx86_64\033[0m CPU架构："
+        arch_choice=0
+    fi
+    if [ "$arch_choice" -eq 2 ]; then
+        wget ${url}github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-arm-linux.tar.xz && tar -xf biliupR-v0.1.19-arm-linux.tar.xz && mv "biliupR-v0.1.19-arm-linux/biliup" "biliupR"
+    elif [ "$arch_choice" -eq 1 ]; then
+        wget ${url}github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-aarch64-linux.tar.xz && tar -xf biliupR-v0.1.19-aarch64-linux.tar.xz && mv "biliupR-v0.1.19-aarch64-linux/biliup" "biliupR"
+    else
+        wget ${url}github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-x86_64-linux.tar.xz && tar -xf biliupR-v0.1.19-x86_64-linux.tar.xz && mv "biliupR-v0.1.19-x86_64-linux/biliup" "biliupR"
+    fi
+    rm -rf biliupR-v0.1.19-*-linux && rm -f biliupR-v0.1.19-*-linux.tar.xz
+    echo -e "biliup-rs完成：${green}已经下载\033[0m"
+fi
 
-:: 查找指定目录中所有符合输入文件类型的文件
-set file_count=0
-for %%G in ("%OUTPUT_BASE%\\*.%FILE_TYPE%") do (
-    set /A file_count+=1
-    set files=!files! "%%~G"
-)
+read -p "根据情况选择0:上传 1:追加投稿[0/1]: " OPERATION_TYPE
+if ! [[ "$OPERATION_TYPE" =~ ^[0-9]+$ ]]; then
+  OPERATION_TYPE=0
+  echo "输出错误，自动选择 0:上传"
+else
+  if [ "$OPERATION_TYPE" -eq 1 ]; then
+    echo "选择了 ${OPERATION_TYPE}:追加投稿"
+  elif [ "$OPERATION_TYPE" -eq 0 ]; then
+    echo "选择了 ${OPERATION_TYPE}:上传"
+  else
+    OPERATION_TYPE=0
+    echo "输出错误，自动选择 0:上传"
+  fi
+fi
 
-:: 检查是否找到了文件
-if not defined files (
-    echo 没有找到文件
-    call :exit_script
-)
+while [[ ! " $ALLOWED_TYPES " =~ " $FILE_TYPE " ]]; do
+  read -p "请输入文件类型（例如：flv）: " FILE_TYPE
+done
 
-:: 获取国家代码
-for /f "tokens=* USEBACKQ" %%F in (`curl -s https://ipinfo.io/country`) do (
-    set "country_code=%%F"
-)
+while [[ ! "$OUTPUT_BASE" = /* ]]; do
+  read -p "请输入需要上传文件的目录: " OUTPUT_BASE
+done
 
-:: 根据操作类型上传文件或追加到现有视频
-echo 上传 %file_count% 个文件
-cd %BILIUP_DIR% 
-if "%OPERATION_TYPE%"=="0" (
-    set /p UPLOAD_TAG="请输入上传标签: "
-    if "%UPLOAD_TAG%"=="" (
-        set UPLOAD_TAG=biliup
-        echo 未输入默认 biliup 标签
-    )
-    if "%country_code%"=="CN" (
-        .\biliupR.exe upload !files! --tag !UPLOAD_TAG! --limit 99
-    ) else (
-        .\biliupR.exe upload !files! --tag !UPLOAD_TAG! --line ws --limit 99
-    )
-) else (
-    :bv_number_loop
-    set /p OPERATIONFILE_TYPE="请输入追加稿件的BV号（例如：BV1fr42147Re）: "
-    if not defined OPERATIONFILE_TYPE goto bv_number_loop
-    echo %OPERATIONFILE_TYPE% | findstr /R "^BV[a-zA-Z0-9]*$" >nul 2>&1
-    if not errorlevel 1 (
-        goto bv_number_loop
-    ) else (
-        if "%country_code%"=="CN" (
-            .\biliupR.exe append --vid !OPERATIONFILE_TYPE! !files! --limit 99
-        ) else (
-            .\biliupR.exe append --vid !OPERATIONFILE_TYPE! !files! --line ws --limit 99
-        )
-    )
-)
+IFS=$'\n'
+files=($(find "$OUTPUT_BASE" -name "*.$FILE_TYPE"))
+if [ ${#files[@]} -eq 0 ]; then
+  echo "没有找到文件"
+  exit 1
+fi
 
-:: 定义退出脚本的子程序
-:exit_script
-echo 运行结束按任意键退出...
-pause >nul
-exit /b
-	
+echo "上传 ${#files[@]} 个文件"
+
+if [ "$OPERATION_TYPE" -eq 0 ]; then
+  while true; do
+    read -p "请输入上传标签（多个标签逗号,隔开）: " UPLOAD_TAG
+    if [[ "$UPLOAD_TAG" =~ ^\^ ]]; then
+        echo "输入错误，标签不能以 ^ 开头"
+    elif [ -z "$UPLOAD_TAG" ]; then
+        UPLOAD_TAG=${UPLOAD_TAG:-biliup}
+        break
+    else
+        UPLOAD_TAG=${UPLOAD_TAG//，/,}
+        if [[ "$UPLOAD_TAG" == *,,* ]]; then
+            echo "输入错误，不能连续输入多个逗号,隔开"
+        else
+            echo "您输入的标签 $UPLOAD_TAG"
+            break
+        fi
+    fi
+  done
+
+  echo "输入了 ${UPLOAD_TAG} 标签"
+  
+  line_option=($([ "$country_code" = "CN" ] || echo "--line ws"))
+  cd ${BILIUP_DIR} && ./biliupR upload "${files[@]}" --tag $UPLOAD_TAG --limit 99 "${line_option[@]}"
+else
+  while [[ ! $OPERATIONFILE_TYPE =~ ^(BV|AV)[a-zA-Z0-9]+$ ]]; do
+    read -p "请输入追加稿件的BV号（例如：BV1fr42147Re）: " OPERATIONFILE_TYPE
+  done
+  line_option=($([ "$country_code" = "CN" ] || echo "--line ws"))
+  cd ${BILIUP_DIR} && ./biliupR append --vid $OPERATIONFILE_TYPE "${files[@]}" --limit 99 "${line_option[@]}"
+fi
