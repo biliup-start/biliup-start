@@ -17,18 +17,19 @@ if not exist %UserDrive%:\ (
 )
 set BILIUP_DIR=\opt\biliup
 echo 你录播文件和日志在 %UserDrive%:%BILIUP_DIR%
+cd %UserDrive%:%BILIUP_DIR%
 
 for /f %%b in ('curl -s https://ipinfo.io/country') do (
     set CountryCode=%%b
 )
 if "%CountryCode%"=="CN" (
     set biliupgithub=https://j.iokun.top/https://
-    set pipsource=https://pypi.tuna.tsinghua.edu.cn/simple
-    echo 你的 IP 归属地是中国，将使用清华源安装 Python 库和 github 代理下载。
+    set pipsource=https://mirrors.cernet.edu.cn/pypi/web/simple
+    echo 你的 IP 归属地中国大陆，将使用三方源和代理下载。
 ) else (
     set biliupgithub=https://
     set pipsource=https://pypi.org/simple
-    echo 你的 IP 归属地不是中国，将使用默认源安装 Python 库和 github 下载。
+    echo 你的 IP 归属地不在内地，将使用官方源和直链下载。
 )
 
 where python >nul 2>nul
@@ -40,40 +41,47 @@ if %errorlevel% neq 0 (
 echo 检查biliup版本...
 for /f "tokens=2 delims= " %%i in ('pip show biliup ^| findstr Version') do set biliversion=%%i
 for /f "tokens=2 delims= " %%i in ('yolk -H "%pipsource%" -V biliup 2^>nul') do set pipversion=%%i
+for /f "tokens=2 delims= " %%i in ('python --version') do set pyversion=%%i
 
 if not defined pipversion (
     echo 查询最新版本失败，正在尝试安装 yolk3k...
     powershell -Command "Start-Process -FilePath 'pip' -ArgumentList 'install -i "%pipsource%" yolk3k' -Verb RunAs -Wait"
     for /f "tokens=2 delims= " %%i in ('yolk -H "%pipsource%" -V biliup 2^>nul') do set pipversion=%%i
-    if not defined pipversion (
-        echo 检查库中版本失败 如需更新手动终端输入 pip install -i "%pipsource%" -U biliup ...
-        set pipversion=%biliversion%
-    )
 ) 
+if not defined pipversion (
+    echo 检查库中版本失败 如需更新手动终端输入 pip install -i "%pipsource%" -U biliup ...
+    set pipversion=%biliversion%
+)
+
+echo 当前最新版本 v%pipversion%
 
 if defined biliversion (
-    if "%pipversion%"=="%biliversion%" (
-        echo 当前运行版本 v%biliversion%
+
+    echo 当前Python版本: %pyversion%
+    if "%pyversion:~0,3%" LSS "3.9" (
+        echo Python版本满足要求,继续执行.
     ) else (
-        echo 当前最新版本 v%pipversion%
+        echo Python < 3.9 请手动更新,退出脚本.
+        exit /b
     )
+
+    if exist "%UserDrive%:%BILIUP_DIR%\upgrade.txt" (
+        goto end
+    ) 
 
     echo 查询库中可用版本 如最新跳过...
-
-    if not "%pipversion%"=="%biliversion%" (
-        choice /C YN /M "biliup版本过低，是否更新："
-        if errorlevel 2 (
-            if not exist %UserDrive%:%BILIUP_DIR%\config.toml (
-                 echo 下载config.toml 请到 %UserDrive%:%BILIUP_DIR% 进行配置config.toml
-                 powershell -Command "Invoke-WebRequest -Uri '%biliupgithub%raw.githubusercontent.com/biliup/biliup/master/public/config.toml' -OutFile '%UserDrive%:%BILIUP_DIR%\config.toml'"
-             )
-            echo 当前运行版本 v%biliversion%
-        ) else (
-            powershell -Command "Start-Process -FilePath 'pip' -ArgumentList 'install -i "%pipsource%" -U biliup' -Verb RunAs -Wait"
-            echo 已更新版本 v%pipversion% 
-        )
+    if not "%biliversion%" == "%pipversion%" (
+        if not "%biliversion%" == "0.4.31" (
+            choice /C YN /M "biliup版本过低，是否更新："
+            if errorlevel 2 (
+                echo. > "%UserDrive%:%BILIUP_DIR%\upgrade.txt"
+            ) else (
+                powershell -Command "Start-Process -FilePath 'pip' -ArgumentList 'install -i "%pipsource%" -U biliup' -Verb RunAs -Wait"
+                for /f "tokens=2 delims= " %%i in ('pip show biliup ^| findstr Version') do set biliversion=%%i
+            )
+        ) 
     )
-)
+) 
 
 :end
 if not defined biliversion (
@@ -81,54 +89,62 @@ if not defined biliversion (
     echo 正在创建运行目录 %UserDrive%:%BILIUP_DIR%...
     mkdir %UserDrive%:%BILIUP_DIR%
 
-    echo 删除可能存在的 chocolatey 目录...
     if exist C:\ProgramData\chocolatey (
         powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c rmdir /s /q C:\ProgramData\chocolatey' -Verb RunAs"
         echo 删除 biliupR-v0.1.19-x86_64-windows 目录成功
     )
 
-    echo 检查 windowsbiliup.bat 是否存在 如存在进行下一步...
     if not exist %~dp0\windowsbiliup.bat (
         echo 正在下载 windowsbiliup.bat...
         powershell -Command "Invoke-WebRequest -Uri '%biliupgithub%github.com/ikun1993/biliupstart/releases/download/biliupstart/windowsbiliup.bat' -OutFile 'windowsbiliup.bat'"
     )
-
     echo 以管理员身份运行 windowsbiliup.bat...
     powershell -Command "Start-Process -FilePath 'windowsbiliup.bat' -Verb RunAs -Wait"
+    choice /C YN /M "你是否想使用 webui 版本："
+    if errorlevel 2 (
+        powershell -Command "Start-Process -FilePath 'pip' -ArgumentList 'install -i "%pipsource%" -U biliup==0.4.31' -Verb RunAs -Wait"
+        for /f "tokens=2 delims= " %%i in ('pip show biliup ^| findstr Version') do set biliversion=%%i
+        if not "%biliversion%" == "0.4.31" (
+            echo 版本更新失败 如需更新手动终端输入 pip install -U biliup==0.4.31 ...
+        ) 
+    ) 
 
-    echo 检查 biliupR-v0.1.19-x86_64-windows.zip 是否存在 如存在进行下一步...
-    if not exist %~dp0\biliupR-v0.1.19-x86_64-windows.zip (
-        echo 正在下载 biliupR-v0.1.19-x86_64-windows.zip...
-        powershell -Command "Invoke-WebRequest -Uri '%biliupgithub%github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-x86_64-windows.zip' -OutFile 'biliupR-v0.1.19-x86_64-windows.zip'"
+    if not exist %UserDrive%:%BILIUP_DIR%\biliupR.exe (
+        if not exist %~dp0\biliupR-v0.1.19-x86_64-windows.zip (
+            echo 正在下载 biliupR-v0.1.19-x86_64-windows.zip...
+            powershell -Command "Invoke-WebRequest -Uri '%biliupgithub%github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-x86_64-windows.zip' -OutFile 'biliupR-v0.1.19-x86_64-windows.zip'"
+        )
+        echo 正在将 biliupR-v0.1.19-x86_64-windows.zip 解压到 %UserDrive%:%BILIUP_DIR%...
+        powershell -Command "Expand-Archive -Path '%~dp0\biliupR-v0.1.19-x86_64-windows.zip' -DestinationPath '%UserDrive%:%BILIUP_DIR%' -Force"
+        powershell -Command "Move-Item -Path '%UserDrive%:%BILIUP_DIR%\biliupR-v0.1.19-x86_64-windows\biliup.exe' -Destination '%UserDrive%:%BILIUP_DIR%\biliupR.exe'"
     )
 
-    echo 正在将 biliupR-v0.1.19-x86_64-windows.zip 解压到 %UserDrive%:%BILIUP_DIR%...
-    powershell -Command "Expand-Archive -Path '%~dp0\biliupR-v0.1.19-x86_64-windows.zip' -DestinationPath '%UserDrive%:%BILIUP_DIR%' -Force"
-    powershell -Command "Move-Item -Path '%UserDrive%:%BILIUP_DIR%\biliupR-v0.1.19-x86_64-windows\biliup.exe' -Destination '%UserDrive%:%BILIUP_DIR%\biliupR.exe'"
-
-    echo 删除可能存在的 windowsbiliup.bat...
     if exist %~dp0\windowsbiliup.bat (
         powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c del %~dp0\windowsbiliup.bat' -Verb RunAs"
         echo 删除 windowsbiliup.bat成功
     )
 
-    echo 删除可能存在的 biliupR-v0.1.19-x86_64-windows.zip...
     if exist %~dp0\biliupR-v0.1.19-x86_64-windows.zip (
         powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c del %~dp0\biliupR-v0.1.19-x86_64-windows.zip' -Verb RunAs"
         echo 删除 biliupR-v0.1.19-x86_64-windows.zip成功
     )
 
-    echo 删除可能存在的 biliupR-v0.1.19-x86_64-windows 目录...
     if exist %UserDrive%:%BILIUP_DIR%\biliupR-v0.1.19-x86_64-windows (
         powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c rmdir /s /q %UserDrive%:%BILIUP_DIR%\biliupR-v0.1.19-x86_64-windows' -Verb RunAs"
         echo 删除 biliupR-v0.1.19-x86_64-windows 目录成功
     )
-)
+) else (
+    if not "%biliversion%" == "%pipversion%" (
+        echo 版本更新失败 如需更新手动终端输入 pip install -U biliup ...
+    ) 
+) 
+
+for /f "tokens=2 delims= " %%i in ('pip show biliup ^| findstr Version') do set biliversion=%%i
+echo 当前运行版本 v%biliversion%
 
 echo 检查 cookies.json 是否存在（B站是否登录）...
 if not exist %UserDrive%:%BILIUP_DIR%\cookies.json (
     echo cookies.json 不存在正在登录B站（推荐扫码）...
-    cd %UserDrive%:%BILIUP_DIR%
     .\biliupR.exe login
 )
 
@@ -188,21 +204,20 @@ if %errorlevel%==0 (
     goto input
 )
 echo 你输入的端口是 %UserInput%
-
 set /p UserPassword="请输入密码(回车不使用密码)："
+echo 正在启动biliup 运行成功10秒后自动为你打开配置端...
+
+set HTTP_FLAG=
+if not "0.4.31" lss "%biliversion%" (
+    set HTTP_FLAG=--http
+    if not exist %UserDrive%:%BILIUP_DIR%\config.toml (
+          echo 下载config.toml 请到 %UserDrive%:%BILIUP_DIR% 进行配置config.toml
+          powershell -Command "Invoke-WebRequest -Uri '%biliupgithub%raw.githubusercontent.com/biliup/biliup/master/public/config.toml' -OutFile '%UserDrive%:%BILIUP_DIR%\config.toml'"
+    )
+)
+
 if "%UserPassword%"=="" (
     echo 未启用密码公网不推荐 持续运行biliup需保持当前窗口存在
-)
-
-echo 正在启动biliup 运行成功后10秒自动为你打开webui配置端...
-for /f "tokens=2 delims= " %%i in ('pip show biliup ^| findstr Version') do set biliupversion=%%i
-set biliupversion="%biliupversion:.=%"
-set HTTP_FLAG=
-if "0431" lss "%biliupversion%" (
-    set HTTP_FLAG=--http
-)
-cd %UserDrive%:%BILIUP_DIR%
-if "%UserPassword%"=="" (
     start /B biliup -P %UserInput% %HTTP_FLAG% start
     timeout /t 11 /nobreak >nul
     start http://localhost:%UserInput%
