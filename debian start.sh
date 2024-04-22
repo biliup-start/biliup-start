@@ -10,7 +10,7 @@ yellow='\e[33m'
 country_code=$(curl -s https://ipinfo.io/country)
 if [ "$country_code" = "CN" ]; then
     url="https://j.iokun.top/https://"
-    pipsource="https://pypi.tuna.tsinghua.edu.cn/simple"
+    pipsource="https://mirrors.cernet.edu.cn/pypi/web/simple"
 else
     url="https://"
     pipsource="https://pypi.org/simple"
@@ -41,7 +41,7 @@ install_biliup() {
         echo -e "            2: ${green} ARM${plain}"
         read -p "请输入[0/1/2]：" arch_choice
         if [[ -z "$arch_choice" || ! "$arch_choice" =~ [0-2] ]]; then
-            echo "你输入错误，使用默认 ${yellow}x86_64${plain} CPU架构："
+            echo -e "你输入错误，使用默认 ${yellow}x86_64${plain} CPU架构："
             arch_choice=0
         fi
         if [ "$arch_choice" -eq 2 ]; then
@@ -64,8 +64,10 @@ fi
 
 echo -e "录播文件和日志储存在${green} ${BILIUP_DIR} ${plain}"
 
-# 检查biliup是否正在运行
-if pgrep -f "biliup" > /dev/null; then
+# 定义函数来运行biliup命令
+biliup_version=$(pip3 show biliup | grep Version | cut -d ' ' -f 2 | tr -d '.')
+
+if [ -z "$biliup_version" ]; then
     read -p "biliup 已安装 你希望重新安装biliup吗？[Y/N]："  rerun
     if [ -z "$rerun" ]; then
         rerun=0
@@ -92,13 +94,21 @@ fi
 # 运行前置条件查询python版本
 python_version=$(python3 --version | cut -d " " -f2)
 
+# 检查Python版本是否大于等于3.9
+if printf '3.9\n%s' "$python_version" | sort -V | head -n1 | grep -q '3.9'; then
+    echo -e "Python3的版本是${yellow} $python_version ${plain} ..."
+else
+    echo -e "Python ${yellow} < 3.9 ${plain} 请手动更新，退出脚本 ..."
+    exit 1
+fi
+
 # 使用sort命令和版本比较来决定使用哪个pip命令
 if printf '3.11\n%s' "$python_version" | sort -V | head -n1 | grep -q '3.11'; then
-    echo -e "Python3的版本是${yellow} $python_version ${plain}, 使用${green}pip install --break-system-packages${plain} 来安装..."
+    echo -e "使用${green}pip install --break-system-packages${plain} 来安装..."
     pip_install_cmd="pip3 install -i $pipsource --break-system-packages"
     python3_install_cmd="-i $pipsource --break-system-packages"
 else
-    echo -e "Python3的版本是${yellow} $python_version ${plain}, 使用标准${green} pip install ${plain}来安装..."
+    echo -e "使用标准${green} pip install ${plain}来安装..."
     pip_install_cmd="pip3 install -i $pipsource"
     python3_install_cmd="-i $pipsource"
 fi
@@ -139,7 +149,7 @@ echo -e "本地版本：${green} $local_version ${plain}"
 if [ -n "$official_version" ]; then
     echo -e "最新版本：${yellow} $official_version ${plain}"
 else
-    echo -e "最新版本：${red} 失败跳过更新检查 手动更新${yellow} sudo $pip_install_cmd -U biliup${plain}"
+    echo -e "最新版本：${red} 失败跳过更新检查 手动更新${yellow} sudo $pip_install_cmd -U biliup==$official_version ${plain}"
 fi
 
 # 如果本地版本和最新版本不一致，提示用户更新
@@ -149,7 +159,7 @@ if [ -n "$official_version" ] && [ "$local_version" != "$official_version" ]; th
         update_choice=y
     fi
     if [ "$update_choice" = "y" ]; then
-        sudo $pip_install_cmd -U biliup
+        sudo $pip_install_cmd -U biliup==$official_version
         echo -e "更新后的版本是：${green} $official_version ${plain}"
     else
         echo -e "最新库中的版本是：${green} $official_version ${plain}"
@@ -214,8 +224,6 @@ while true; do
     fi
 done
 
-# 定义函数来运行biliup命令
-biliup_version=$(pip3 show biliup | grep Version | cut -d ' ' -f 2 | tr -d '.')
 run_biliup() {
     if [[ $biliup_version -lt 0432 ]]; then
         read -p  "0.4.32以下 是否开启hhtp？回车默认开启[Y/N]：" rrun
