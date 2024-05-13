@@ -1,47 +1,50 @@
 @echo off
 
-:: å‘é€è¿è¡Œæ¬¡æ•°åˆ°åç«¯æœåŠ¡å™¨
-set backend_url=https://run.biliup.me/update_run_count
+:: ·¢ËÍÔËĞĞ´ÎÊıµ½ºó¶Ë·şÎñÆ÷
+set backend_url=https://run.iokun.cn/update_run_count
 powershell -Command "Invoke-RestMethod -Uri %backend_url% -Method POST -Body @{run_count=1}"
 
-:: è¯·æ±‚ Flask è·å–è¿è¡Œæ¬¡æ•°
-set get_run_count_url=https://run.biliup.me/get_run_count
+:: ÇëÇó Flask »ñÈ¡ÔËĞĞ´ÎÊı
+set get_run_count_url=https://run.iokun.cn/get_run_count
 for /f "delims=" %%i in ('powershell -Command "(Invoke-RestMethod -Uri %get_run_count_url%).run_count"') do set run_count=%%i
 
-:: è¾“å‡ºåˆ°ç»ˆç«¯
-echo ä¸€é”®è„šæœ¬å·²è¿è¡Œ %run_count% æ¬¡
+:: Êä³öµ½ÖÕ¶Ë
+echo Ò»¼ü½Å±¾ÒÑÔËĞĞ %run_count% ´Î
 
-:: Step 1: å®‰è£… Chocolatey
+:: Step 1: °²×° Chocolatey
 @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 
-:: Step 2: ä½¿ç”¨ Chocolatey å®‰è£… ffmpeg
+:: Step 2: Ê¹ÓÃ Chocolatey °²×° ffmpeg
 choco install ffmpeg -y
 
-:: Step 3: ä½¿ç”¨ Chocolatey å®‰è£… Python 3.10
+:: Step 3: Ê¹ÓÃ Chocolatey °²×° Python 3.10
 choco install python310 -y
 
-:: Step 4: æ·»åŠ  Python è·¯å¾„åˆ°ç³»ç»Ÿç¯å¢ƒå˜é‡
+:: Step 4: Ê¹ÓÃ Chocolatey °²×° Node.js
+choco install nodejs -y
+
+:: Step 5: Ìí¼Ó Python Â·¾¶µ½ÏµÍ³»·¾³±äÁ¿
 setx PATH "%PATH%;C:\Python310\Scripts\;C:\Python310\"
 
-:: Step 5: æ£€æµ‹ IP å½’å±åœ°å¹¶å®‰è£… biliup
+:: Step 6: ¼ì²â IP ¹éÊôµØ²¢°²×° biliup
 setlocal
 
-:: åˆ¤æ–­ IP å½’å±åœ°æ˜¯å¦ä¸ºä¸­å›½
+:: ÅĞ¶Ï IP ¹éÊôµØÊÇ·ñÎªÖĞ¹ú
 for /f %%b in ('curl -s https://ipinfo.io/country') do (
     set CountryCode=%%b
 )
-echo IPå½’å±åœ°: %CountryCode%
+echo IP¹éÊôµØ: %CountryCode%
 if "%CountryCode%"=="CN" (
     set pipSource="https://mirrors.cernet.edu.cn/pypi/web/simple"
-    echo ä½ çš„ IP å½’å±åœ°æ˜¯ä¸­å›½ï¼Œå°†ä½¿ç”¨ä¸‰æ–¹æºå®‰è£… Python åº“ã€‚
+    echo ÄãµÄ IP ¹éÊôµØÊÇÖĞ¹ú£¬½«Ê¹ÓÃÈı·½Ô´°²×° Python ¿â¡£
 ) else (
     set pipSource="https://pypi.org/simple"
-    echo ä½ çš„ IP å½’å±åœ°ä¸æ˜¯ä¸­å›½ï¼Œå°†ä½¿ç”¨é»˜è®¤æºå®‰è£… Python åº“ã€‚
+    echo ÄãµÄ IP ¹éÊôµØ²»ÊÇÖĞ¹ú£¬½«Ê¹ÓÃÄ¬ÈÏÔ´°²×° Python ¿â¡£
 )
 
-::  å®‰è£… biliup
+::  °²×° biliup
 pip install -i "%pipSource%" biliup
 
 endlocal
-::  è¾“å‡ºå®Œæˆä¿¡æ¯
-echo å·²å®Œæˆå…¨éƒ¨å®‰è£…
+::  Êä³öÍê³ÉĞÅÏ¢
+echo ÒÑÍê³ÉÈ«²¿°²×°
