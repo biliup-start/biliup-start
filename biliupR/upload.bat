@@ -1,53 +1,59 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: èŽ·å–å›½å®¶ä»£ç 
+:: »ñÈ¡¹ú¼Ò´úÂë
 for /f "tokens=* USEBACKQ" %%F in (`curl -s https://ipinfo.io/country`) do (
     set "country_code=%%F"
 )
+if "%country_code%"=="CN" (
+    set biliupgithub=https://j.iokun.top/https://
+    set line=
+) else (
+    set biliupgithub=https://
+    set line=--line ws
+ )
+
+:: »ñÈ¡×îÐÂ°æ±¾°æ±¾ºÅ
+for /f "tokens=2 delims= " %%i in ('curl -I -s %biliupgithub%github.com/biliup/biliup-rs/releases/latest/download/ ^| findstr /i location') do set "latest_url=%%i"
+
+:: ´ÓÁ´½ÓÖÐÌáÈ¡°æ±¾ºÅ
+for /f "tokens=7 delims=/" %%a in ("%latest_url%") do set "biliuprs_version=%%a"
+
+:: ¶¨ÒåÄ¿Â¼ºÍÔÊÐíµÄÎÄ¼þÀàÐÍ
+set BILIUP_DIR=C:\opt\biliup
+set ALLOWED_TYPES=mp4 flv avi wmv mov webm mpeg4 ts mpg rm rmvb mkv
 
 if not exist C:\opt\biliup\biliupR.exe (
     mkdir C:\opt\biliup
-    if "%country_code%"=="CN" (
-        echo ä½¿ç”¨ä»£ç†ä¸‹è½½ biliupR-v0.1.19-x86_64-windows.zip...
-        powershell -Command "Invoke-WebRequest -Uri 'https://j.iokun.top/https://github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-x86_64-windows.zip' -OutFile 'biliupR-v0.1.19-x86_64-windows.zip'"
-    ) else (
-        echo ä½¿ç”¨ç›´é“¾ä¸‹è½½ biliupR-v0.1.19-x86_64-windows.zip...
-        powershell -Command "Invoke-WebRequest -Uri 'https://github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-x86_64-windows.zip' -OutFile 'biliupR-v0.1.19-x86_64-windows.zip'"
-    )
+    powershell -Command "Invoke-WebRequest -Uri '%biliupgithub%github.com/biliup/biliup-rs/releases/latest/download/biliupR-%biliuprs_version%-x86_64-windows.zip' -OutFile '%BILIUP_DIR%\biliupR-%biliuprs_version%-x86_64-windows.zip'"
 
-    echo æ­£åœ¨å°† biliupR-v0.1.19-x86_64-windows.zip è§£åŽ‹åˆ° C:\opt\biliup...
-    powershell -Command "Expand-Archive -Path '%~dp0\biliupR-v0.1.19-x86_64-windows.zip' -DestinationPath 'C:\opt\biliup' -Force"
-    powershell -Command "Move-Item -Path 'C:\opt\biliup\biliupR-v0.1.19-x86_64-windows\biliup.exe' -Destination 'C:\opt\biliup\biliupR.exe'"
+    echo ÕýÔÚ½« biliupR-%biliuprs_version%-x86_64-windows.zip ½âÑ¹µ½ %BILIUP_DIR% ...
+    powershell -Command "Expand-Archive -Path '%BILIUP_DIR%\biliupR-%biliuprs_version%-x86_64-windows.zip' -DestinationPath 'C:\opt\biliup' -Force"
+    powershell -Command "Move-Item -Path '%BILIUP_DIR%\biliupR-%biliuprs_version%-x86_64-windows\biliup.exe' -Destination 'C:\opt\biliup\biliupR.exe'"
 
-    if exist %~dp0\biliupR-v0.1.19-x86_64-windows.zip (
-        echo C:\opt\biliup\biliupR.exeå®‰è£…æˆåŠŸ åˆ é™¤ biliupR-v0.1.19-x86_64-windows.zip
-        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c del %~dp0\biliupR-v0.1.19-x86_64-windows.zip' -Verb RunAs"
-        powershell -Command "Start-Process -FilePath 'powershell' -ArgumentList '/c Remove-Item -Recurse -Force C:\opt\biliup\biliupR-v0.1.19-x86_64-windows' -Wait -Verb RunAs"
+    if exist %BILIUP_DIR%\biliupR-%biliuprs_version%-x86_64-windows.zip (
+        echo C:\opt\biliup\biliupR.exe°²×°³É¹¦ É¾³ý biliupR-%biliuprs_version%-x86_64-windows.zip
+        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c del %BILIUP_DIR%\biliupR-%biliuprs_version%-x86_64-windows.zip' -Verb RunAs"
+        powershell -Command "Start-Process -FilePath 'powershell' -ArgumentList '/c Remove-Item -Recurse -Force %BILIUP_DIR%\biliupR-%biliuprs_version%-x86_64-windows' -Wait -Verb RunAs"
     )
 )
 
-:: èŽ·å–ç”¨æˆ·è¾“å…¥çš„æ“ä½œç±»åž‹ï¼Œå¦‚æžœä¸æ˜¯1ï¼ˆè¿½åŠ ï¼‰ï¼Œåˆ™é»˜è®¤ä¸º0ï¼ˆä¸Šä¼ ï¼‰
-set /p OPERATION_TYPE="æ ¹æ®æƒ…å†µé€‰æ‹©0:ä¸Šä¼  1:è¿½åŠ æŠ•ç¨¿[0/1]: "
+:: »ñÈ¡ÓÃ»§ÊäÈëµÄ²Ù×÷ÀàÐÍ£¬Èç¹û²»ÊÇ1£¨×·¼Ó£©£¬ÔòÄ¬ÈÏÎª0£¨ÉÏ´«£©
+set /p OPERATION_TYPE="¸ù¾ÝÇé¿öÑ¡Ôñ0:ÉÏ´« 1:×·¼ÓÍ¶¸å[0/1]: "
 if not "%OPERATION_TYPE%"=="0" if not "%OPERATION_TYPE%"=="1" (
     set OPERATION_TYPE=0
-    echo è¾“å…¥é”™è¯¯ï¼Œè‡ªåŠ¨é€‰æ‹© 0:ä¸Šä¼ 
+    echo ÊäÈë´íÎó£¬×Ô¶¯Ñ¡Ôñ 0:ÉÏ´«
 ) else (
     if "%OPERATION_TYPE%"=="1" (
-        echo é€‰æ‹©äº† %OPERATION_TYPE%:è¿½åŠ æŠ•ç¨¿
+        echo Ñ¡ÔñÁË %OPERATION_TYPE%:×·¼ÓÍ¶¸å
     ) else (
-        echo é€‰æ‹©äº† %OPERATION_TYPE%:ä¸Šä¼ 
+        echo Ñ¡ÔñÁË %OPERATION_TYPE%:ÉÏ´«
     )
 )
 
-:: å®šä¹‰ç›®å½•å’Œå…è®¸çš„æ–‡ä»¶ç±»åž‹
-set BILIUP_DIR=C:\opt\biliup
-cd %BILIUP_DIR% 
-set ALLOWED_TYPES=mp4 flv avi wmv mov webm mpeg4 ts mpg rm rmvb mkv
-
-:: èŽ·å–ç”¨æˆ·è¾“å…¥çš„æ–‡ä»¶ç±»åž‹å¹¶æ£€æŸ¥æ˜¯å¦åœ¨å…è®¸çš„ç±»åž‹ä¸­
+:: »ñÈ¡ÓÃ»§ÊäÈëµÄÎÄ¼þÀàÐÍ²¢¼ì²éÊÇ·ñÔÚÔÊÐíµÄÀàÐÍÖÐ
 :file_type_loop
-set /p FILE_TYPE="è¯·è¾“å…¥è§†é¢‘æ ¼å¼ï¼ˆä¾‹å¦‚ï¼šflvï¼‰: "
+set /p FILE_TYPE="ÇëÊäÈëÊÓÆµ¸ñÊ½£¨ÀýÈç£ºflv£©: "
 set FOUND=0
 for %%t in (%ALLOWED_TYPES%) do (
     if /I "%%t"=="%FILE_TYPE%" (
@@ -58,66 +64,64 @@ for %%t in (%ALLOWED_TYPES%) do (
 :end_loop
 if %FOUND%==0 goto file_type_loop
 
-:: èŽ·å–ç”¨æˆ·è¾“å…¥çš„éœ€è¦ä¸Šä¼ æ–‡ä»¶çš„ç›®å½•
+:: »ñÈ¡ÓÃ»§ÊäÈëµÄÐèÒªÉÏ´«ÎÄ¼þµÄÄ¿Â¼
 :directory_loop
-set /p OUTPUT_BASE="è¾“å…¥ä¸Šä¼ æ–‡ä»¶çš„ç›®å½•ï¼ˆä¾‹å¦‚ï¼šC:\ï¼‰: "
+set /p OUTPUT_BASE="ÊäÈëÉÏ´«ÎÄ¼þµÄÄ¿Â¼£¨ÀýÈç£ºC:\£©: "
 if not exist "%OUTPUT_BASE%" goto directory_loop
 
-:: æŸ¥æ‰¾æŒ‡å®šç›®å½•ä¸­æ‰€æœ‰ç¬¦åˆè¾“å…¥æ–‡ä»¶ç±»åž‹çš„æ–‡ä»¶
+:: ²éÕÒÖ¸¶¨Ä¿Â¼ÖÐËùÓÐ·ûºÏÊäÈëÎÄ¼þÀàÐÍµÄÎÄ¼þ
 set file_count=0
 for %%G in ("%OUTPUT_BASE%\\*.%FILE_TYPE%") do (
     set /A file_count+=1
     set files=!files! "%%~G"
 )
 
-:: æ£€æŸ¥æ˜¯å¦æ‰¾åˆ°äº†æ–‡ä»¶
+:: ¼ì²éÊÇ·ñÕÒµ½ÁËÎÄ¼þ
 if not defined files (
-    echo æ²¡æœ‰æ‰¾åˆ°æ–‡ä»¶
-    goto exit_script
+    echo Ã»ÓÐÕÒµ½ÎÄ¼þ
+    goto directory_loop
 )
 
-:: æ ¹æ®æ“ä½œç±»åž‹ä¸Šä¼ æ–‡ä»¶æˆ–è¿½åŠ åˆ°çŽ°æœ‰è§†é¢‘
-echo ä¸Šä¼  %file_count% ä¸ªæ–‡ä»¶
+:: ¸ù¾Ý²Ù×÷ÀàÐÍÉÏ´«ÎÄ¼þ»ò×·¼Óµ½ÏÖÓÐÊÓÆµ
+echo ÉÏ´« %file_count% ¸öÎÄ¼þ
+cd %BILIUP_DIR%
+
+if not exist "%BILIUP_DIR%\cookies.json" (
+    echo ÄãÃ»ÓÐµÇÂ¼»òÕßcookies²»´æÔÚ
+    %BILIUP_DIR%\biliupR.exe login
+)
+
 if "%OPERATION_TYPE%"=="0" (
     :inputTag
-    set /p UPLOAD_TAG="è¯·è¾“å…¥ä¸Šä¼ æ ‡ç­¾ï¼ˆå¤šä¸ªæ ‡ç­¾é€—å·,éš”å¼€ï¼‰: "
+    set /p UPLOAD_TAG="ÇëÊäÈëÉÏ´«±êÇ©£¨¶à¸ö±êÇ©¶ººÅ,¸ô¿ª£©: "
     if defined UPLOAD_TAG (
-        set UPLOAD_TAG=!UPLOAD_TAG:ï¼Œ=,!
-        echo !UPLOAD_TAG! | findstr /r ",," >nul
-        if !errorlevel! equ 0 (
-            echo è¾“å…¥é”™è¯¯ï¼Œä¸èƒ½è¿žç»­è¾“å…¥å¤šä¸ªé€—å·,éš”å¼€
+        set UPLOAD_TAG=%UPLOAD_TAG:£¬=,%
+        echo %UPLOAD_TAG% | findstr /r ",," >nul
+        if %errorlevel% equ 0 (
+            echo ÊäÈë´íÎó£¬²»ÄÜÁ¬ÐøÊäÈë¶à¸ö¶ººÅ,¸ô¿ª
             goto inputTag
         )
-        echo æ‚¨è¾“å…¥çš„æ ‡ç­¾ !UPLOAD_TAG!
+        echo ÄúÊäÈëµÄ±êÇ© %UPLOAD_TAG%
     ) else (
         set UPLOAD_TAG=biliup
-        echo æœªè¾“å…¥é»˜è®¤ biliup æ ‡ç­¾
+        echo Î´ÊäÈëÄ¬ÈÏ biliup ±êÇ©
     )
 
-    if "%country_code%"=="CN" (
-        .\biliupR.exe upload !files! --tag !UPLOAD_TAG! --limit !file_count!
-    ) else (
-        .\biliupR.exe upload !files! --tag !UPLOAD_TAG! --line ws --limit !file_count!
-    )
-    goto exit_script
+    .\biliupR.exe upload !files! --tag !UPLOAD_TAG! !line! --limit !file_count!
 ) else (
     :bv_number_loop
-    set /p OPERATIONFILE_TYPE="è¯·è¾“å…¥è¿½åŠ ç¨¿ä»¶çš„BVå·ï¼ˆä¾‹å¦‚ï¼šBV1fr42147Reï¼‰: "
+    set /p OPERATIONFILE_TYPE="ÇëÊäÈë×·¼Ó¸å¼þµÄBVºÅ£¨ÀýÈç£ºBV1fr42147Re£©: "
     if not defined OPERATIONFILE_TYPE goto bv_number_loop
     echo %OPERATIONFILE_TYPE% | findstr /R "^BV[a-zA-Z0-9]*$" >nul 2>&1
     if not errorlevel 1 (
         goto bv_number_loop
     ) else (
-        if "%country_code%"=="CN" (
-            .\biliupR.exe append --vid !OPERATIONFILE_TYPE! !files! --limit !file_count!
-        ) else (
-            .\biliupR.exe append --vid !OPERATIONFILE_TYPE! !files! --line ws --limit !file_count!
-        )
+    .\biliupR.exe upload !files! --tag !UPLOAD_TAG! !line! --limit !file_count!
     )
 )
 
-:: å®šä¹‰é€€å‡ºè„šæœ¬
+:: ¶¨ÒåÍË³ö½Å±¾µÄ×Ó³ÌÐò
 :exit_script
-echo è¿è¡Œç»“æŸæŒ‰ä»»æ„é”®é€€å‡º...
+echo ÔËÐÐ½áÊø°´ÈÎÒâ¼üÍË³ö...
 pause >nul
 exit /b
