@@ -6,6 +6,24 @@ plain='\033[0m'
 red='\e[31m'
 yellow='\e[33m'
 
+# ANSI转义码，设置高亮
+highlight="\e[1;31m"  
+reset="\e[0m"      
+
+# 获取终端宽度
+columns=$(tput cols)
+
+ascii_art="
+${red}\e[1m 注意：该脚本第三方制作与官方无关 ${reset}
+${green}\e[1m 注意：脚本开始结束均有爱发电链接 ${reset}
+${plain}\e[1m 注意：https://afdian.net/a/biliup ${reset}"
+
+# 计算居中的空格数量
+padding=$((($columns - 32) / 2))
+
+# 显示居中的 ASCII 艺术
+echo -e "${highlight}$(echo "$ascii_art" | sed "s/^/$(printf "%${padding}s")/")${reset}"
+
 # 获取国家代码
 country_code=$(curl -s https://ipinfo.io/country)
 if [ "$country_code" = "CN" ]; then
@@ -18,10 +36,23 @@ fi
 
 # 全局工作目录
 BILIUP_DIR=/opt/biliup
-if [ ! -d "${BILIUP_DIR}" ]; then
-    mkdir ${BILIUP_DIR}
+
+# 运行前置条件查询python版本
+python_version=$(python3 --version | cut -d " " -f2)
+
+# 检查Python版本是否大于等于3.9
+if printf '3.9\n%s' "$python_version" | sort -V | head -n1 | grep -q '3.9'; then
+    echo -e "Python3的版本是${yellow} $python_version ${reset} ..."
+else
+    echo -e "Python ${yellow} < 3.9 ${reset} 请手动更新，退出脚本 ..."
+    exit 1
 fi
-cd ${BILIUP_DIR} 
+
+# 获取最新版本的链接
+latest_url=$(curl -Ls -o /dev/null -w %{url_effective} ${url}github.com/biliup/biliup-rs/releases/latest/download/)
+
+# 从链接中提取版本号
+biliuprs_version=$(echo $latest_url | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+')
 
 # 安装下载命令
 install_biliup() {
@@ -29,84 +60,79 @@ install_biliup() {
         echo "This script must be run as root" 1>&2
         exit 1
     fi
-
+    
     if [ ! -f "install.sh" ]; then
-        wget -O install.sh https://image.biliup.me/install.sh && chmod +x install.sh && bash install.sh
-        echo -e "biliup完成：${green}安装命令已经运行${plain}"
+        wget ${url}github.com/ikun1993/biliupstart/releases/download/biliupstart/install.sh && chmod +x install.sh && bash install.sh
+        echo -e "biliup完成：${green}安装命令已经运行${reset}"
     else
-        echo -e "biliup完成：${green}安装命令已经存在${plain}"
+        echo -e "biliup完成：${green}安装命令已经存在${reset}"
     fi
 
-    if ! find  -name "*-linux.tar.xz" -print -quit | grep -q .; then
-        echo "你的CPU架构是："
-        echo -e "    （${red}默认${plain}）0: ${yellow}x86_64${plain}"
-        echo -e "            1: ${green}ARMa64${plain}"
-        echo -e "            2: ${green} ARM${plain}"
-        read -p "请输入[0/1/2]：" arch_choice
-        if [[ -z "$arch_choice" || ! "$arch_choice" =~ [0-2] ]]; then
-            echo -e "你输入错误，使用默认 ${yellow}x86_64${plain} CPU架构："
-            arch_choice=0
-        fi
-        if [ "$arch_choice" -eq 2 ]; then
-            wget ${url}github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-arm-linux.tar.xz && tar -xf biliupR-v0.1.19-arm-linux.tar.xz && mv "biliupR-v0.1.19-arm-linux/biliup" "biliupR"
-        elif [ "$arch_choice" -eq 1 ]; then
-            wget ${url}github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-aarch64-linux.tar.xz && tar -xf biliupR-v0.1.19-aarch64-linux.tar.xz && mv "biliupR-v0.1.19-aarch64-linux/biliup" "biliupR"
+    # 定义函数来运行biliup命令
+    biliup_version=$((10#$(pip3 show biliup | grep Version | cut -d ' ' -f 2 | tr -d '.')))
+    if [[ $biliup_version -lt 453 ]]; then
+        if ! find  -name "*-linux.tar.xz" -print -quit | grep -q .; then
+            echo "你的CPU架构是："
+            echo -e "    （${red}默认${reset}）0: ${yellow}x86_64${reset}"
+            echo -e "            1: ${green}ARMa64${reset}"
+            echo -e "            2: ${green} ARM${reset}"
+            read -p "请输入[0/1/2]：" arch_choice
+            if [[ -z "$arch_choice" || ! "$arch_choice" =~ [0-2] ]]; then
+                echo -e "你输入错误，使用默认 ${yellow}x86_64${reset} CPU架构："
+                arch_choice=0
+            fi
+            if [ "$arch_choice" -eq 2 ]; then
+                wget ${url}github.com/biliup/biliup-rs/releases/latest/download/biliupR-${biliuprs_version}-arm-linux.tar.xz && tar -xf biliupR-${biliuprs_version}-arm-linux.tar.xz && mv "biliupR-${biliuprs_version}-arm-linux/biliup" "biliupR"
+            elif [ "$arch_choice" -eq 1 ]; then
+                wget ${url}github.com/biliup/biliup-rs/releases/latest/download/biliupR-${biliuprs_version}-aarch64-linux.tar.xz && tar -xf biliupR-${biliuprs_version}-aarch64-linux.tar.xz && mv "biliupR-${biliuprs_version}-aarch64-linux/biliup" "biliupR"
+            else
+                wget ${url}github.com/biliup/biliup-rs/releases/latest/download/biliupR-${biliuprs_version}-x86_64-linux.tar.xz && tar -xf biliupR-${biliuprs_version}-linux.tar.xz && mv "biliupR-${biliuprs_version}-x86_64-linux/biliup" "biliupR"
+            fi
+            echo -e "biliup-rs完成：${green}已经下载${reset}"
         else
-            wget ${url}github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-x86_64-linux.tar.xz && tar -xf biliupR-v0.1.19-x86_64-linux.tar.xz && mv "biliupR-v0.1.19-x86_64-linux/biliup" "biliupR"
+            echo -e "biliup-rs完成：${green}已经存在${reset}"
         fi
-        echo -e "biliup-rs完成：${green}已经下载${plain}"
-    else
-        echo -e "biliup-rs完成：${green}已经存在${plain}"
     fi
 }
 
-echo -e "录播文件和日志储存在${green} ${BILIUP_DIR} ${plain}"
-
-# 定义函数来运行biliup命令
-biliup_version=$(pip3 show biliup | grep Version | cut -d ' ' -f 2 | tr -d '.')
-
-if [ -z "$biliup_version" ]; then
+if pgrep -f "biliup" > /dev/null; then
     read -p "biliup 已安装 你希望重新安装biliup吗？[Y/N]："  rerun
     if [ -z "$rerun" ]; then
         rerun=0
     fi
     if [ "$rerun" = "y" ]; then
         pkill -f "biliup" ; rm -f "watch_process.pid" 
-        echo -e "${green}已经杀死biliup程，将重新运行biliup${plain}"
-        install_biliup
+        echo -e "${green}已经杀死biliup程，将重新运行biliup${reset}"
     else
-        echo -e "${red}取消重新启动biliup${plain}"
+        echo -e "${red}取消重新启动biliup${reset}"
         read -p "biliup 已运行 你希望新增一个biliup进程吗？[Y/N]："  addnew
         if [ "$addnew" = "y" ]; then
-            pkill -f "biliup" ; rm -f "watch_process.pid" 
-            echo -e "将${green}新增${plain}一个biliup进程"
+            BILIUP_DIR="/opt/biliup/$(date +%s)"
+            echo -e "将${green}新增${reset}一个biliup进程"
         else
-            echo -e "${red}退出脚本${plain}"
+            echo -e "${red}退出脚本${reset}"
             exit 1
         fi
     fi
-else
-    install_biliup
 fi
 
-# 运行前置条件查询python版本
-python_version=$(python3 --version | cut -d " " -f2)
-
-# 检查Python版本是否大于等于3.9
-if printf '3.9\n%s' "$python_version" | sort -V | head -n1 | grep -q '3.9'; then
-    echo -e "Python3的版本是${yellow} $python_version ${plain} ..."
-else
-    echo -e "Python ${yellow} < 3.9 ${plain} 请手动更新，退出脚本 ..."
-    exit 1
+# 检查biliup是否安装
+cd ${BILIUP_DIR}
+if [ ! -d "${BILIUP_DIR}" ]; then
+    mkdir ${BILIUP_DIR}
+fi
+echo -e "录播文件和日志储存在${green} ${BILIUP_DIR} ${reset}"
+if ! pip3 show biliup > /dev/null 2>&1; then
+    install_biliup
 fi
 
 # 使用sort命令和版本比较来决定使用哪个pip命令
 if printf '3.11\n%s' "$python_version" | sort -V | head -n1 | grep -q '3.11'; then
-    echo -e "使用${green}pip install --break-system-packages${plain} 来安装..."
+    echo -e "使用${green}pip install --break-system-packages${reset} 来安装..."
     pip_install_cmd="pip3 install -i $pipsource --break-system-packages"
     python3_install_cmd="-i $pipsource --break-system-packages"
 else
-    echo -e "使用标准${green} pip install ${plain}来安装..."
+    echo -e "使用标准${green} pip install ${reset}来安装..."
     pip_install_cmd="pip3 install -i $pipsource"
     python3_install_cmd="-i $pipsource"
 fi
@@ -126,59 +152,67 @@ if ! pip3 --version &> /dev/null; then
 fi
 if ! pip3 --version &> /dev/null; then
     curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && sudo python3 "get-pip.py" $python3_install_cmd &&  rm -f "get-pip.py"
-    echo -e "检测到只安装python3 已自动安装${green}最新版本pip3${plain}"   
+    echo -e "检测到只安装python3 已自动安装${green}最新版本pip3${reset}"   
 else
-    if [[ $(echo "$(pip3 --version | awk '{print $2}') 21.3" | awk '{print ($1 < $2)}') -ne 0 ]]; then
-        official_version=$(pip search biliup | cut -d ' ' -f 2)
-    else
-        if [ -n "$(pip3 show yolk3k | grep Version | cut -d ' ' -f 2)" ]; then
-            official_version=$(yolk -H "%pipsource%" -V biliup | cut -d ' ' -f 2)
-        else    
-            sudo $pip_install_cmd yolk3k
-            source ~/.bashrc  # 更新你的 shell
-            official_version=$(yolk -H "%pipsource%" -V biliup | cut -d ' ' -f 2)
-        fi
-    fi
+    official_version=$(pip index versions biliup | grep -oP '(?<=LATEST:    ).*')
 fi
 
-# 检查本地biliup版本
 local_version=$(pip3 show biliup | grep Version | cut -d ' ' -f 2)
-echo -e "本地版本：${green} $local_version ${plain}"
+echo -e "本地版本：${green} $local_version ${reset}"
 if [ -n "$official_version" ]; then
-    echo -e "最新版本：${yellow} $official_version ${plain}"
+    echo -e "最新版本：${yellow} $official_version ${reset}"
 else
-    echo -e "最新版本：${red} 失败跳过更新检查 手动更新${yellow} sudo $pip_install_cmd -U biliup==$official_version ${plain}"
+    echo -e "最新版本：${red} 失败跳过更新检查 手动更新${yellow} sudo $pip_install_cmd -U biliup ${reset}"
 fi
 
 # 如果本地版本和最新版本不一致，提示用户更新
-if [ -n "$official_version" ] && [ "$local_version" != "$official_version" ]; then
-    read -p "本地版本和库中最新版本不一致，你希望更新biliup吗？[Y/N]：" update_choice
-    if [ -z "$update_choice" ]; then
-        update_choice=y
-    fi
-    if [ "$update_choice" = "y" ]; then
-        sudo $pip_install_cmd -U biliup==$official_version
-        echo -e "更新后的版本是：${green} $official_version ${plain}"
-    else
-        echo -e "最新库中的版本是：${green} $official_version ${plain}"
+biliup_version=$((10#$(pip3 show biliup | grep Version | cut -d ' ' -f 2 | tr -d '.')))
+if [ ! -f "/opt/biliup/upgrade.txt" ] || [[ $biliup_version -gt 431 ]]; then
+    if [ -n "$official_version" ] && [ "$local_version" != "$official_version" ]; then
+        read -p "本地版本和最新版本不一致，你希望更新biliup吗？[Y/N]：" update_choice
+        if [ -z "$update_choice" ]; then
+            update_choice=y
+        fi
+        if [ "$update_choice" = "y" ]; then
+            sudo $pip_install_cmd -U biliup==$official_version
+            echo -e "更新后的版本是：${green} $official_version ${reset}"
+            biliup_version=$(pip3 show biliup | grep Version | cut -d ' ' -f 2 | tr -d '.')
+        else
+            echo -e "最新库中版本是：${green} $official_version ${reset}"
+            echo $update_choice > "/opt/biliup/upgrade.txt"
+        fi
     fi
 fi
-    
+
 # 登录biliup-rs
-if [ ! -f "cookies.json" ]; then
-    read -p "未登录B站（cookier.json不存在）推荐使用扫码登录，是否登录？[Y/N]：" choice
-    if [ -z "$choice" ]; then
-        choice=y
-    fi
-    if [ "$choice" = "y" ]; then
-        sudo bash -c "biliupR login"
-        if [ -f "cookies.json" ]; then
-            echo -e "已从biliup-rs获取${yellow}cookie${red} 泄露会被盗登B站${plain}"
-        else
-            echo -e "未登录biliup-rs 请控制台手动执行${red} biliupR login${plain}"
+if [[ $biliup_version -lt 452 ]]; then
+    if [ ! -f "cookies.json" ]; then
+        read -p "未登录B站（cookier.json不存在）推荐使用扫码登录，是否登录？[Y/N]：" choice
+        if [ -z "$choice" ]; then
+            choice=y
         fi
-    else
-        echo -e "cookie是登录B站所需 如上传请控制台手动执行${red} biliupR login${plain}"
+        if [ "$choice" = "y" ]; then
+            sudo bash -c "biliupR login"
+            if [ -f "cookies.json" ]; then
+                echo -e "已从biliup-rs获取${yellow}cookie${red} 泄露会被盗登B站${reset}"
+            else
+                echo -e "未登录biliup-rs 请控制台手动执行${red} biliupR login${reset}"
+            fi
+        else
+            echo -e "cookie是登录B站所需 如上传请控制台手动执行${red} biliupR login${reset}"
+        fi
+    fi
+else
+    NODE_VERSION=$(node -v | tr -d 'v' | cut -d '.' -f 1)
+    if [ $NODE_VERSION -lt 20 ]; then
+        wget -qO- ${url}raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+        export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+        source ~/.bashrc
+
+        echo -e "检测版本低于20是否更新，${red}如斗鱼签名出现错误请输入Y ${reset}"
+        nvm install --lts
+        nvm use --lts
     fi
 fi
 
@@ -190,16 +224,16 @@ while true; do
     read -p  "请输入一个小于65535的端口(回车默认19159)： " UserPort
     if [ -z "$UserPort" ]; then
         UserPort=19159
-        echo -e "你使用了默认端口 ${green}$UserPort ${plain}  等待进入下一步"
+        echo -e "你使用了默认端口 ${green}$UserPort ${reset}  等待进入下一步"
     fi
     if [[ $UserPort =~ ^[0-9]+$ ]] && [ $UserPort -le 65535 ]; then
         if [[ $ForbiddenPorts =~ (^|[[:space:]])$UserPort($|[[:space:]]) ]]; then
             echo "错误: 端口 $UserPort 被禁用，请重新输入。"
-        elif lsof -i :$UserPort > /dev/null ; then
+        elif timeout 1 bash -c "</dev/tcp/localhost/$UserPort" 2>/dev/null; then
             echo "错误: 端口 $UserPort 已被占用，请重新输入。"
         else
             if [ $UserPort != 19159 ]; then
-                echo -e "注意: 你选择的端口 ${yellow} $UserPort ${plain} 不是默认端口。如果你的防火墙设置阻止了该端口通信，请确保你已经在防火墙中打开了这个端口。"
+                echo -e "注意: 你选择的端口 ${yellow} $UserPort ${reset} 不是默认端口。如果你的防火墙设置阻止了该端口通信，请确保你已经在防火墙中打开了这个端口。"
             fi
             break
         fi
@@ -217,53 +251,42 @@ while true; do
     elif [[ "$UserPassword" =~ [$'\001'-$'\037'] ]]; then
         echo "错误: 你输入的密码包含无效的字符，请重新输入。"
     else
-        echo -e "账号：${green} biliup ${plain} 密码：${yellow} $UserPassword ${plain}"
+        echo -e "账号：${green} biliup ${reset} 密码：${yellow} $UserPassword ${reset}"
         break
     fi
 done
 
+# 定义函数来运行biliup命令
 run_biliup() {
-    if [[ $biliup_version -lt 0432 ]]; then
+    if [[ $biliup_version -lt 431 ]]; then
+        curl -L "${url}raw.githubusercontent.com/biliup/biliup/master/public/config.toml" -o "config.toml"
         read -p  "0.4.32以下 是否开启hhtp？回车默认开启[Y/N]：" rrun
         if [ -z "$rerun" ]; then
             rrun=y
         fi
+        echo -e "biliup v0.4.32以下 请到${red} config.toml ${reset}进行配置"
         if [ "$rrun" = "y" ]; then
-            echo -e "biliup v0.4.32以下 请到${red} config.toml ${plain}进行配置"
-            curl -L "${url}raw.githubusercontent.com/biliup/biliup/master/public/config.toml" -o "config.toml"
-            if [ "$UserPassword" = "0" ]; then
-                sudo bash -c "biliup --http -P $UserPort start"
-            else
-                sudo bash -c "biliup --http -P $UserPort --password '$UserPassword' start"
-            fi
+           HTTP_FLAG=--http
         else
-            echo -e "biliup v0.4.32以下 请到${red} config.toml ${plain}进行配置"
-            curl -L "${url}raw.githubusercontent.com/biliup/biliup/master/public/config.toml" -o "config.toml"
-            if [ "$UserPassword" = "0" ]; then
-                sudo bash -c "biliup -P $UserPort start"
-            else
-                sudo bash -c "biliup -P $UserPort --password '$UserPassword' start"
-            fi
-        fi   
-    else
-        if [ "$UserPassword" = "0" ]; then
-            sudo bash -c "biliup -P $UserPort start"
-        else
-            sudo bash -c "biliup -P $UserPort --password '$UserPassword' start"
+           HTTP_FLAG=
         fi   
     fi
+    if [ "$UserPassword" = "0" ]; then
+        sudo bash -c "biliup -P $UserPort $HTTP_FLAG start"
+    else
+        sudo bash -c "biliup -P $UserPort --password '$UserPassword' $HTTP_FLAG start"
+    fi   
 }
-
 run_biliup
 
 # 检查biliup是否正在运行
 rm_biliup() {
     if [ -n "$(curl -s ipinfo.io/ip)" ]; then    
-        echo -e "biliup已运行请至浏览器配置WEBUI  ${green}http://$(curl -s ipinfo.io/ip):$UserPort${plain}"
+        echo -e "biliup已运行请至浏览器配置WEBUI  ${green}http://$(curl -s ipinfo.io/ip):$UserPort${reset}"
     else
-        echo -e "biliup已运行请至浏览器配置WEBUI  ${green}http://[$(curl -s 6.ipw.cn)]:$UserPort${plain}"
+        echo -e "biliup已运行请至浏览器配置WEBUI  ${green}http://[$(curl -s 6.ipw.cn)]:$UserPort${reset}"
     fi
-    if [ -f "install.sh" ]
+    if find ${BILIUP_DIR} -name install.sh -print -quit 2>/dev/null | grep -q '^'
     then
         read -p  "你希望清理安装包吗？回车默认清理[Y/N]：" rerun
         if [ -z "$rerun" ]; then
@@ -274,7 +297,7 @@ rm_biliup() {
             rm -rf biliupR-v0.1.19-*-linux
             rm -f install.sh
             rm -f qrcode.png
-            echo -e "${green}已清理安装包,biliu启动成功${plain}"
+            echo -e "${green}已清理安装包,biliu启动成功${reset}"
         fi
     fi
 }
@@ -290,8 +313,10 @@ else
     fi
     if ! pgrep -f "biliup" > /dev/null; then
         echo $err_output
-        echo -e "${red}真一键biliup出问题了，请在QQ群中反馈${plain}"
+        echo -e "${red}真一键biliup出问题了，请在QQ群中反馈${reset}"
     else
         rm_biliup
     fi
 fi
+echo -e "爱发电赞助作者维护${plain} https://afdian.net/a/biliup${reset}"
+echo -e "反馈问题需带上文件${red} ${BILIUP_DIR}/ds_update.log${reset}"

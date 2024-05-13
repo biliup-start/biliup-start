@@ -1,26 +1,38 @@
 @echo off
 
 :inputDrive
+echo ×¢Òâ£º¸Ã½Å±¾µÚÈı·½ÖÆ×÷Óë¹Ù·½ÎŞ¹Ø
+echo ×¢Òâ£ºÔŞÖú°®·¢µçÇë¿ª·¢ÕßºÈ±­¿§·È 
+echo ×¢Òâ£ºhttps://afdian.net/a/biliup
 set UserDrive=
-set /p UserDrive="è¯·è¾“å…¥ä½ æƒ³å½•æ’­çš„ç›˜ç¬¦ï¼ˆé»˜è®¤ä¸ºCç›˜ï¼‰ï¼š"
+set /p UserDrive="ÇëÊäÈëÄãÏëÂ¼²¥µÄÅÌ·û£¨Ä¬ÈÏÎªCÅÌ£©£º"
 if "%UserDrive%"=="" (
     set UserDrive=C
 )
 echo %UserDrive%| findstr /R "^[a-zA-Z]$" > nul
 if %errorlevel%==1 (
-    echo é”™è¯¯: ä½ è¾“å…¥çš„ä¸æ˜¯å•ä¸ªå­—æ¯ï¼Œè¯·é‡æ–°è¾“å…¥ã€‚
+    echo ´íÎó: ÄãÊäÈëµÄ²»ÊÇµ¥¸ö×ÖÄ¸£¬ÇëÖØĞÂÊäÈë¡£
     goto inputDrive
 )
 if not exist %UserDrive%:\ (
-    echo é”™è¯¯: æœªæ‰¾åˆ° %UserDrive%:\ ç›˜ï¼Œè¯·åˆ°æˆ‘çš„ç”µè„‘ä¸­æŸ¥çœ‹æ­£ç¡®ç›˜ç¬¦
+    echo ´íÎó: Î´ÕÒµ½ %UserDrive%:\ ÅÌ£¬Çëµ½ÎÒµÄµçÄÔÖĞ²é¿´ÕıÈ·ÅÌ·û
     goto inputDrive
 )
 set BILIUP_DIR=opt\biliup
-echo ä½ å½•æ’­æ–‡ä»¶å’Œæ—¥å¿—åœ¨ %UserDrive%:\%BILIUP_DIR%
+
+netstat -aon | findstr /R /C:"^  TCP    [0-9.]*:19159 " >nul
+if %errorlevel%==0 (
+    echo ÄãÒÑ¾­ÔËĞĞÁËÒ»¸öbiliup ½«ÎªÄúĞÂÔöbiliup
+    set BILIUP_DIR=opt\biliup\%random%
+)
+
 if not exist %UserDrive%:\%BILIUP_DIR% (
     mkdir %UserDrive%:\%BILIUP_DIR%
 )
+
 cd %UserDrive%:\%BILIUP_DIR%
+echo ÄãÂ¼²¥ÎÄ¼şºÍÈÕÖ¾ÔÚ %UserDrive%:\%BILIUP_DIR%
+echo ·´À¡ÎÊÌâĞè´øÉÏÎÄ¼ş %UserDrive%:\%BILIUP_DIR%\ds_update.log
 
 for /f %%b in ('curl -s https://ipinfo.io/country') do (
     set CountryCode=%%b
@@ -28,56 +40,57 @@ for /f %%b in ('curl -s https://ipinfo.io/country') do (
 if "%CountryCode%"=="CN" (
     set biliupgithub=https://j.iokun.top/https://
     set pipsource=https://mirrors.cernet.edu.cn/pypi/web/simple
-    echo ä½ çš„ IP å½’å±åœ°ä¸­å›½å¤§é™†ï¼Œå°†ä½¿ç”¨ä¸‰æ–¹æºå’Œä»£ç†ä¸‹è½½ã€‚
+    echo ÄãµÄ IP ¹éÊôµØÖĞ¹ú´óÂ½£¬½«Ê¹ÓÃÈı·½Ô´ºÍ´úÀíÏÂÔØ¡£
 ) else (
     set biliupgithub=https://
     set pipsource=https://pypi.org/simple
-    echo ä½ çš„ IP å½’å±åœ°ä¸åœ¨å†…åœ°ï¼Œå°†ä½¿ç”¨å®˜æ–¹æºå’Œç›´é“¾ä¸‹è½½ã€‚
+    echo ÄãµÄ IP ¹éÊôµØ²»ÔÚÄÚµØ£¬½«Ê¹ÓÃ¹Ù·½Ô´ºÍÖ±Á´ÏÂÔØ¡£
 )
+:: »ñÈ¡×îĞÂ°æ±¾°æ±¾ºÅ
+for /f "tokens=2 delims= " %%i in ('curl -I -s %biliupgithub%github.com/biliup/biliup-rs/releases/latest/download/ ^| findstr /i location') do set "latest_url=%%i"
+for /f "tokens=7 delims=/" %%a in ("%latest_url%") do set "biliuprs_version=%%a"
 
 where python >nul 2>nul
 if %errorlevel% neq 0 (
-    echo æœªå®‰è£… python
+    echo Î´°²×° python
     goto end
 )
 
-echo æ£€æŸ¥biliupç‰ˆæœ¬...
+echo ¼ì²ébiliup°æ±¾...
 for /f "tokens=2 delims= " %%i in ('pip show biliup ^| findstr Version') do set biliversion=%%i
-for /f "tokens=2 delims= " %%i in ('yolk -H "%pipsource%" -V biliup 2^>nul') do set pipversion=%%i
+for /f "delims=" %%a in ('pip index versions biliup') do (echo %%a | findstr "LATEST" >nul && set "line=%%a")
+for /f "tokens=2" %%b in ("%line%") do set "pipversion=%%b"
 for /f "tokens=2 delims= " %%i in ('python --version') do set pyversion=%%i
 
 if not defined pipversion (
-    echo æŸ¥è¯¢æœ€æ–°ç‰ˆæœ¬å¤±è´¥ï¼Œæ­£åœ¨å°è¯•å®‰è£… yolk3k...
-    powershell -Command "Start-Process -FilePath 'pip' -ArgumentList 'install -i "%pipsource%" yolk3k' -Verb RunAs -Wait"
-    for /f "tokens=2 delims= " %%i in ('yolk -H "%pipsource%" -V biliup 2^>nul') do set pipversion=%%i
-) 
-if not defined pipversion (
-    echo æ£€æŸ¥åº“ä¸­ç‰ˆæœ¬å¤±è´¥ å¦‚éœ€æ›´æ–°æ‰‹åŠ¨ç»ˆç«¯è¾“å…¥ pip install -i "%pipsource%" -U biliup ...
+    echo ¼ì²é¿âÖĞ°æ±¾Ê§°Ü ÈçĞè¸üĞÂÊÖ¶¯ÖÕ¶ËÊäÈë pip install -i "%pipsource%" -U biliup ...
     set pipversion=%biliversion%
+) else (
+    echo µ±Ç°×îĞÂ°æ±¾ v%pipversion%
 )
-
-echo å½“å‰æœ€æ–°ç‰ˆæœ¬ v%pipversion%
 
 if defined biliversion (
 
-    echo å½“å‰Pythonç‰ˆæœ¬: %pyversion%
+    echo µ±Ç°Python°æ±¾: %pyversion%
     if "%pyversion:~0,3%" LSS "3.9" (
-        echo Pythonç‰ˆæœ¬æ»¡è¶³è¦æ±‚,ç»§ç»­æ‰§è¡Œ.
+        echo Python°æ±¾Âú×ãÒªÇó,¼ÌĞøÖ´ĞĞ.
     ) else (
-        echo Python < 3.9 è¯·æ‰‹åŠ¨æ›´æ–°,é€€å‡ºè„šæœ¬.
+        echo Python < 3.9 ÇëÊÖ¶¯¸üĞÂ,ÍË³ö½Å±¾.
         exit /b
     )
 
-    if exist ".\upgrade.txt" (
-        goto end
+    if exist "%UserDrive%:\opt\biliup\upgrade.txt" (
+        if not "0.4.31" lss "%biliversion%" (
+            goto end
+        )
     ) 
 
-    echo æŸ¥è¯¢åº“ä¸­å¯ç”¨ç‰ˆæœ¬ å¦‚æœ€æ–°è·³è¿‡...
+    echo ²éÑ¯¿âÖĞ¿ÉÓÃ°æ±¾ Èç×îĞÂÌø¹ı...
     if not "%biliversion%" == "%pipversion%" (
-        if not "%biliversion%" == "0.4.31" (
-            choice /C YN /M "biliupç‰ˆæœ¬è¿‡ä½ï¼Œæ˜¯å¦æ›´æ–°ï¼š"
+        if "0.4.31" lss "%biliversion%" (
+            choice /C YN /M "biliup°æ±¾¹ıµÍ£¬ÊÇ·ñ¸üĞÂ£º"
             if errorlevel 2 (
-                echo. > ".\upgrade.txt"
+                echo. > "%UserDrive%:\opt\biliup\upgrade.txt"
             ) else (
                 powershell -Command "Start-Process -FilePath 'pip' -ArgumentList 'install -i "%pipsource%" -U biliup' -Verb RunAs -Wait"
                 for /f "tokens=2 delims= " %%i in ('pip show biliup ^| findstr Version') do set biliversion=%%i
@@ -88,83 +101,83 @@ if defined biliversion (
 
 :end
 if not defined biliversion (
-    echo æœªè¿è¡Œè¿‡è„šæœ¬ å¼€å§‹æ‰§è¡Œå®‰è£…
+    echo Î´ÔËĞĞ¹ı½Å±¾ ¿ªÊ¼Ö´ĞĞ°²×°
 
     if exist C:\ProgramData\chocolatey (
         powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c rmdir /s /q C:\ProgramData\chocolatey' -Verb RunAs"
-        echo åˆ é™¤ biliupR-v0.1.19-x86_64-windows ç›®å½•æˆåŠŸ
+        echo É¾³ı chocolatey ³É¹¦
     )
 
-    if not exist %~dp0\windowsbiliup.bat (
-        echo æ­£åœ¨ä¸‹è½½ windowsbiliup.bat...
-        powershell -Command "Invoke-WebRequest -Uri '%biliupgithub%github.com/ikun1993/biliupstart/releases/download/biliupstart/windowsbiliup.bat' -OutFile 'windowsbiliup.bat'"
+    if not exist %UserDrive%:\opt\biliup\windowsbiliup.bat (
+        echo ÕıÔÚÏÂÔØ windowsbiliup.bat...
+        powershell -Command "Invoke-WebRequest -Uri '%biliupgithub%github.com/ikun1993/biliupstart/releases/download/biliupstart/windowsbiliup.bat' -OutFile '%UserDrive%:\opt\biliup\windowsbiliup.bat'"
     )
-    echo ä»¥ç®¡ç†å‘˜èº«ä»½è¿è¡Œ windowsbiliup.bat...
-    powershell -Command "Start-Process -FilePath 'windowsbiliup.bat' -Verb RunAs -Wait"
-    choice /C YN /M "ä½ æ˜¯å¦æƒ³ä½¿ç”¨ webui ç‰ˆæœ¬ï¼š"
+    echo ÒÔ¹ÜÀíÔ±Éí·İÔËĞĞ windowsbiliup.bat...
+    powershell -Command "Start-Process -FilePath '%UserDrive%:\opt\biliup\windowsbiliup.bat' -Verb RunAs -Wait"
+    choice /C YN /M "ÄãÊÇ·ñÏëÊ¹ÓÃ webui °æ±¾£º"
     if errorlevel 2 (
         powershell -Command "Start-Process -FilePath 'pip' -ArgumentList 'install -i "%pipsource%" -U biliup==0.4.31' -Verb RunAs -Wait"
         for /f "tokens=2 delims= " %%i in ('pip show biliup ^| findstr Version') do set biliversion=%%i
         if not "%biliversion%" == "0.4.31" (
-            echo ç‰ˆæœ¬æ›´æ–°å¤±è´¥ å¦‚éœ€æ›´æ–°æ‰‹åŠ¨ç»ˆç«¯è¾“å…¥ pip install -U biliup==0.4.31 ...
+            echo °æ±¾¸üĞÂÊ§°Ü ÈçĞè¸üĞÂÊÖ¶¯ÖÕ¶ËÊäÈë pip install -U biliup==0.4.31 ...
         ) 
     ) 
 
-    if not "%pipversion%" gtr "0.4.52" (
-        if not exist .\biliupR.exe (
-            if not exist %~dp0\biliupR-v0.1.19-x86_64-windows.zip (
-                echo æ­£åœ¨ä¸‹è½½ biliupR-v0.1.19-x86_64-windows.zip...
-                powershell -Command "Invoke-WebRequest -Uri '%biliupgithub%github.com/biliup/biliup-rs/releases/download/v0.1.19/biliupR-v0.1.19-x86_64-windows.zip' -OutFile 'biliupR-v0.1.19-x86_64-windows.zip'"
+    if not "%biliversion%" geq "0.4.51" (
+        if not exist %UserDrive%:\opt\biliup\biliupR.exe (
+            if not exist %UserDrive%:\opt\biliup\biliupR-%biliuprs_version%-x86_64-windows.zip (
+                echo ÕıÔÚÏÂÔØ biliupR-%biliuprs_version% -x86_64-windows.zip...
+                powershell -Command "Invoke-WebRequest -Uri '%biliupgithub%github.com/biliup/biliup-rs/releases/latest/download/biliupR-%biliuprs_version%-x86_64-windows.zip' -OutFile '%UserDrive%:\opt\biliup\biliupR-%biliuprs_version%-x86_64-windows.zip'"
             )
-            echo æ­£åœ¨å°† biliupR-v0.1.19-x86_64-windows.zip è§£å‹åˆ° %UserDrive%:\%BILIUP_DIR%...
-            powershell -Command "Expand-Archive -Path '%~dp0\biliupR-v0.1.19-x86_64-windows.zip' -DestinationPath '%UserDrive%:\%BILIUP_DIR%' -Force"
-            powershell -Command "Move-Item -Path '.\biliupR-v0.1.19-x86_64-windows\biliup.exe' -Destination '.\biliupR.exe'"
+            echo ÕıÔÚ½« biliupR-%biliuprs_version%-x86_64-windows.zip ½âÑ¹µ½ %UserDrive%:\%BILIUP_DIR%...
+            powershell -Command "Expand-Archive -Path '%UserDrive%:\opt\biliup\biliupR-%biliuprs_version%-x86_64-windows.zip' -DestinationPath '%UserDrive%:\opt\biliup' -Force"
+            powershell -Command "Move-Item -Path '%UserDrive%:\opt\biliup\biliupR-%biliuprs_version%-x86_64-windows\biliup.exe' -Destination '%UserDrive%:\opt\biliup\biliupR.exe'"
         )
     )
 
-    if exist %~dp0\windowsbiliup.bat (
-        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c del %~dp0\windowsbiliup.bat' -Verb RunAs"
-        echo åˆ é™¤ windowsbiliup.batæˆåŠŸ
+    if exist %UserDrive%:\opt\biliup\windowsbiliup.bat (
+        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c del %UserDrive%:\opt\biliup\windowsbiliup.bat' -Verb RunAs"
+        echo É¾³ı windowsbiliup.bat³É¹¦
     )
 
-    if exist %~dp0\biliupR-v0.1.19-x86_64-windows.zip (
-        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c del %~dp0\biliupR-v0.1.19-x86_64-windows.zip' -Verb RunAs"
-        echo åˆ é™¤ biliupR-v0.1.19-x86_64-windows.zipæˆåŠŸ
+    if exist %UserDrive%:\opt\biliup\biliupR-%biliuprs_version%-x86_64-windows.zip (
+        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c del %UserDrive%:\opt\biliup\biliupR-%biliuprs_version%-x86_64-windows.zip' -Verb RunAs"
+        echo É¾³ı biliupR-%biliuprs_version%-x86_64-windows.zip³É¹¦
     )
 
-    if exist .\biliupR-v0.1.19-x86_64-windows (
-        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c rmdir /s /q .\biliupR-v0.1.19-x86_64-windows' -Verb RunAs"
-        echo åˆ é™¤ biliupR-v0.1.19-x86_64-windows ç›®å½•æˆåŠŸ
+    if exist %UserDrive%:\opt\biliup\biliupR-%biliuprs_version%-x86_64-windows (
+        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c rmdir /s /q %UserDrive%:\opt\biliup\biliupR-%biliuprs_version%-x86_64-windows' -Verb RunAs"
+        echo É¾³ı biliupR-%biliuprs_version%-x86_64-windows Ä¿Â¼³É¹¦
     )
 ) else (
     if not "%biliversion%" == "%pipversion%" (
-        echo ç‰ˆæœ¬æ›´æ–°å¤±è´¥ å¦‚éœ€æ›´æ–°æ‰‹åŠ¨ç»ˆç«¯è¾“å…¥ pip install -U biliup ...
+        echo °æ±¾Óë¿âÖĞ²»Ò»ÖÂ£¬ÈçĞè¸üĞÂÊÖ¶¯ÖÕ¶ËÊäÈë pip install -U biliup ...
     ) 
 ) 
 
 for /f "tokens=2 delims= " %%i in ('pip show biliup ^| findstr Version') do set biliversion=%%i
-echo å½“å‰è¿è¡Œç‰ˆæœ¬ v%biliversion%
+echo µ±Ç°ÔËĞĞ°æ±¾ v%biliversion%
 
 if not "%biliversion%" gtr "0.4.52" (
-    echo æ£€æŸ¥ cookies.json æ˜¯å¦å­˜åœ¨ï¼ˆBç«™æ˜¯å¦ç™»å½•ï¼‰...
-    if not exist .\cookies.json (
-        echo cookies.json ä¸å­˜åœ¨æ­£åœ¨ç™»å½•Bç«™ï¼ˆæ¨èæ‰«ç ï¼‰...
-        .\biliupR.exe login
+    echo ¼ì²é cookies.json ÊÇ·ñ´æÔÚ£¨BÕ¾ÊÇ·ñµÇÂ¼£©...
+    if not exist %UserDrive%:\opt\biliup\cookies.json (
+        echo cookies.json ²»´æÔÚÕıÔÚµÇÂ¼BÕ¾£¨ÍÆ¼öÉ¨Âë£©...
+        %UserDrive%:\opt\biliup\biliupR.exe login
     )
 ) else (
-    echo 0.4.53æˆ–ä»¥ä¸Šå¯åœ¨WEBUIç«¯æ‰«æç™»å½•
+    echo 0.4.53»òÒÔÉÏ¿ÉÔÚWEBUI¶ËÉ¨ÃèµÇÂ¼
     goto biliupR
 )
 
-if exist .\cookies.json (
-    if exist .\qrcode.png (
-        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c del .\qrcode.png' -Verb RunAs"    
-        echo ç™»å½•æˆåŠŸ åˆ é™¤ç™»å½•äºŒç»´ç å›¾ç‰‡
+if exist %UserDrive%:\opt\biliup\cookies.json (
+    if exist %UserDrive%:\opt\biliup\qrcode.png (
+        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c del %UserDrive%:\opt\biliup\qrcode.png' -Verb RunAs"    
+        echo µÇÂ¼³É¹¦ É¾³ıµÇÂ¼¶şÎ¬ÂëÍ¼Æ¬
     ) else (
-        echo ç™»å½•æˆåŠŸæˆ– cookies.json æ–‡ä»¶å·²å­˜åœ¨
+        echo µÇÂ¼³É¹¦»ò cookies.json ÎÄ¼şÒÑ´æÔÚ
     )
 ) else (
-    echo ç™»å½•å¤±è´¥ è¯·æ‰“å¼€ç»ˆç«¯è¾“å…¥ .\biliupR.exe login æ‰‹åŠ¨ç™»å½•
+    echo µÇÂ¼Ê§°Ü Çë´ò¿ªÖÕ¶ËÊäÈë %UserDrive%:\opt\biliup\biliupR.exe login ÊÖ¶¯µÇÂ¼
 )
 
 :biliupR
@@ -172,18 +185,18 @@ setlocal enabledelayedexpansion
 set "ForbiddenPorts=0 1 7 9 11 13 15 17 19 20 21 22 23 25 37 42 43 53 77 79 87 95 101 102 103 104 109 110 111 113 115 117 119 123 135 139 143 179 389 465 512 513 514 515 526 530 531 532 540 556 563 587 601 636 993 995 2049 3659 4045 6000 6665 6666 6667 6668 6669 137 139 445 593 1025 2745 3127 6129 3389"
 :input
 set UserInput=
-set /p UserInput="è¯·è¾“å…¥ä¸€ä¸ªå°äº65535ç«¯å£(å›è½¦é»˜è®¤19159)ï¼š"
+set /p UserInput="ÇëÊäÈëÒ»¸öĞ¡ÓÚ65535¶Ë¿Ú(»Ø³µÄ¬ÈÏ19159)£º"
 if "%UserInput%"=="" (
     set UserInput=19159
 )
 echo %UserInput%| findstr /R "^[0-9][0-9]*$" > nul
 if %errorlevel%==1 (
-    echo é”™è¯¯: ä½ è¾“å…¥çš„ä¸æ˜¯æ•°å­—ï¼Œè¯·é‡æ–°è¾“å…¥ã€‚
+    echo ´íÎó: ÄãÊäÈëµÄ²»ÊÇÊı×Ö£¬ÇëÖØĞÂÊäÈë¡£
     goto input
 )
 for %%i in (%ForbiddenPorts%) do (
     if %UserInput% equ %%i (
-        echo é”™è¯¯: ç«¯å£ %UserInput% è¢«ç¦ç”¨ï¼Œè¯·é‡æ–°è¾“å…¥ã€‚
+        echo ´íÎó: ¶Ë¿Ú %UserInput% ±»½ûÓÃ£¬ÇëÖØĞÂÊäÈë¡£
         goto input
     )
 )
@@ -196,38 +209,38 @@ if defined num (
     goto loop
 )
 if %len% GTR 5 (
-    echo é”™è¯¯: ä½ è¾“å…¥çš„æ•°å­—è¶…è¿‡äº†5ä½ï¼Œè¯·é‡æ–°è¾“å…¥ã€‚
+    echo ´íÎó: ÄãÊäÈëµÄÊı×Ö³¬¹ıÁË5Î»£¬ÇëÖØĞÂÊäÈë¡£
     goto input
 )
 if %UserInput% GTR 65535 (
-    echo é”™è¯¯: ä½ è¾“å…¥çš„æ•°å­—è¶…è¿‡äº†65535ï¼Œè¯·é‡æ–°è¾“å…¥ã€‚
+    echo ´íÎó: ÄãÊäÈëµÄÊı×Ö³¬¹ıÁË65535£¬ÇëÖØĞÂÊäÈë¡£
     goto input
 )
 netstat -aon | findstr /R /C:"^  TCP    [0-9.]*:%UserInput% " >nul
 if %errorlevel%==0 (
-    echo é”™è¯¯: ç«¯å£ %UserInput% å·²è¢«å ç”¨ï¼Œè¯·é‡æ–°è¾“å…¥ã€‚
+    echo ´íÎó: ¶Ë¿Ú %UserInput% ÒÑ±»Õ¼ÓÃ£¬ÇëÖØĞÂÊäÈë¡£
     goto input
 )
-echo ä½ è¾“å…¥çš„ç«¯å£æ˜¯ %UserInput%
-set /p UserPassword="è¯·è¾“å…¥å¯†ç (å›è½¦ä¸ä½¿ç”¨å¯†ç )ï¼š"
-echo æ­£åœ¨å¯åŠ¨biliup è¿è¡ŒæˆåŠŸ10ç§’åè‡ªåŠ¨ä¸ºä½ æ‰“å¼€é…ç½®ç«¯...
+echo ÄãÊäÈëµÄ¶Ë¿ÚÊÇ %UserInput%
+set /p UserPassword="ÇëÊäÈëÃÜÂë(»Ø³µ²»Ê¹ÓÃÃÜÂë)£º"
+echo ÕıÔÚÆô¶¯biliup ÔËĞĞ³É¹¦10Ãëºó×Ô¶¯ÎªÄã´ò¿ªÅäÖÃ¶Ë...
 
 set HTTP_FLAG=
 if not "0.4.31" lss "%biliversion%" (
     set HTTP_FLAG=--http
-    if not exist .\config.toml (
-          echo ä¸‹è½½config.toml è¯·åˆ° %UserDrive%:\%BILIUP_DIR% è¿›è¡Œé…ç½®config.toml
-          powershell -Command "Invoke-WebRequest -Uri '%biliupgithub%raw.githubusercontent.com/biliup/biliup/master/public/config.toml' -OutFile '.\config.toml'"
+    if not exist %UserDrive%:\opt\biliup\config.toml (
+          echo ÏÂÔØconfig.toml Çëµ½ %UserDrive%:\%BILIUP_DIR% ½øĞĞÅäÖÃconfig.toml
+          powershell -Command "Invoke-WebRequest -Uri '%biliupgithub%raw.githubusercontent.com/biliup/biliup/master/public/config.toml' -OutFile '%UserDrive%:\opt\biliup\config.toml'"
     )
 )
 
 if "%UserPassword%"=="" (
-    echo æœªå¯ç”¨å¯†ç å…¬ç½‘ä¸æ¨è æŒç»­è¿è¡Œbiliupéœ€ä¿æŒå½“å‰çª—å£å­˜åœ¨
+    echo Î´ÆôÓÃÃÜÂë¹«Íø²»ÍÆ¼ö ³ÖĞøÔËĞĞbiliupĞè±£³Öµ±Ç°´°¿Ú´æÔÚ
     start /B biliup -P %UserInput% %HTTP_FLAG% start
     timeout /t 11 /nobreak >nul
     start http://localhost:%UserInput%
 ) else (
-    echo è´¦å·ï¼šbiliup å¯†ç ï¼š%UserPassword% æŒç»­è¿è¡Œbiliupéœ€ä¿æŒå½“å‰çª—å£å­˜åœ¨
+    echo ÕËºÅ£ºbiliup ÃÜÂë£º%UserPassword% ³ÖĞøÔËĞĞbiliupĞè±£³Öµ±Ç°´°¿Ú´æÔÚ
     start /B biliup -P %UserInput% --password %UserPassword% %HTTP_FLAG% start
     timeout /t 11 /nobreak >nul
     start http://localhost:%UserInput%
