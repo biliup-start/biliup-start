@@ -1,4 +1,4 @@
-**脚本总计 Run Count: **
+**脚本总计** Run Count: 
 
 **biliup项目**的一键启动：`https://github.com/biliup/biliup`
 
