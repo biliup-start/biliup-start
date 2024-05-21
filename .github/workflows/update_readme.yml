@@ -18,7 +18,7 @@ jobs:
           token: ${{ secrets.GH_TOKEN }} 
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.8
 
@@ -41,15 +41,15 @@ jobs:
         id: check_run_count
         run: |
           if [ $(cat run_count.txt | tail -1 | cut -d'=' -f2) -le $(cat run_count.txt | tail -2 | head -1 | cut -d'=' -f2) ]; then
-            echo "::set-output name=skip::true"
+            echo "skip=true" >> $GITHUB_ENV
           fi
 
       - name: Set Run Count as env variable
         run: echo "total_run_count=$(cat run_count.txt | tail -1 | cut -d'=' -f2)" >> $GITHUB_ENV
 
       - name: Update README
-        if: steps.check_run_count.outputs.skip != 'true'
-        uses: actions/github-script@v5
+        if: env.skip != 'true'
+        uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
