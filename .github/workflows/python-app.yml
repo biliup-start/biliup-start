@@ -3,6 +3,7 @@ name: Update README
 on:
   schedule:
     - cron: '0 * * * *'  # 每小时运行一次
+  workflow_dispatch:
 
 jobs:
   build:
