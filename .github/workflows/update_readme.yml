@@ -27,6 +27,7 @@ jobs:
         API_KEY: ${{ secrets.API_KEY }} 
       run: |
         python update_readme.py
+        
     - name: Commit and push if changed
       run: |
         git config --global user.email "actions@github.com"
@@ -35,4 +36,5 @@ jobs:
         git diff --quiet && git diff --staged --quiet || git commit -m "Update README"
         git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/ikun1993/biliupstart.git
         git push
+
 
