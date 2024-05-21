@@ -44,12 +44,12 @@ jobs:
             if (fs.existsSync('README.md')) {
               readme = fs.readFileSync('README.md', 'utf8');
             }
-            const runCountString = `**脚本总计 ** Run Count: ${{ env.total_run_count }}`;
-            const runCountRegex = /\*\*脚本总计 \*\* Run Count: \d+/;
+            const runCountString = `**脚本总计** Run Count: ${{ env.total_run_count }}`;
+            const runCountRegex = /\*\*脚本总计\*\* Run Count: \d+/;
             if (readme.match(runCountRegex)) {
               readme = readme.replace(runCountRegex, runCountString);
-            } else if (readme.includes('**脚本总计 **')) {
-              readme = readme.replace('**脚本总计 **', runCountString);
+            } else if (readme.includes('**脚本总计**')) {
+              readme = readme.replace('**脚本总计**', runCountString);
             } else {
               readme += `\n${runCountString}`;
             }
