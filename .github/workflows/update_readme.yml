@@ -23,5 +23,7 @@ jobs:
         pip install requests
 
     - name: Update README
+      env:  
+        API_KEY: ${{ secrets.API_KEY }}  
       run: |
         python update_readme.py
