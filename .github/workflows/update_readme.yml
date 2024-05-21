@@ -1,6 +1,8 @@
 name: Update
 
 on:
+  schedule:
+    - cron: '0 * * * *'  # 每小时运行一次
   workflow_dispatch:
 
 jobs:
@@ -42,16 +44,22 @@ jobs:
             if (fs.existsSync('README.md')) {
               readme = fs.readFileSync('README.md', 'utf8');
             }
-            readme = readme.replace(/Run Count: \d+/, `Run Count: ${{ env.total_run_count }}`);
-            if (!readme.includes('Run Count:')) {
-              readme += `\nRun Count: ${{ env.total_run_count }}`;
+            const runCountString = `脚本运行总计： Run Count: ${{ env.total_run_count }}`;
+            const runCountRegex = /脚本运行总计： Run Count: \d+/;
+            if (readme.match(runCountRegex)) {
+              readme = readme.replace(runCountRegex, runCountString);
+            } else if (readme.includes('脚本运行总计：')) {
+              readme = readme.replace('脚本运行总计：', runCountString);
+            } else {
+              readme += `\n${runCountString}`;
             }
             fs.writeFileSync('README.md', readme);
-          github-token: ${{ secrets.GH_TOKEN }}  
+          github-token: ${{ secrets.GH_TOKEN }}
 
       - name: Add changes to git
         run: |
           git add run_count.txt
+          git add README.md
 
       - name: Commit and push changes
         run: |
