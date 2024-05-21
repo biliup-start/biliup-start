@@ -1,6 +1,6 @@
 import os
 import requests
-import json 
+import json
 
 API_KEY = os.getenv('API_KEY')
 GET_RUN_COUNT_URL = "https://run.iokun.cn/get_run_count/total"
