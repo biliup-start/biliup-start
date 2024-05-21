@@ -2,8 +2,10 @@ name: Update
 
 on:
   schedule:
-    - cron: '0 * * * *'  # 每小时运行一次
+    - cron: '0 0 * * *'  # 每天运行一次
   workflow_dispatch:
+  repository_dispatch:
+    types: server-update
 
 jobs:
   update_run_count:
@@ -35,10 +37,18 @@ jobs:
           print(f"total_run_count={run_count}", file=open("run_count.txt", "a"))
         shell: python
 
+      - name: Check if Run Count has increased
+        id: check_run_count
+        run: |
+          if [ $(cat run_count.txt | tail -1 | cut -d'=' -f2) -le $(cat run_count.txt | tail -2 | head -1 | cut -d'=' -f2) ]; then
+            echo "::set-output name=skip::true"
+          fi
+
       - name: Set Run Count as env variable
         run: echo "total_run_count=$(cat run_count.txt | tail -1 | cut -d'=' -f2)" >> $GITHUB_ENV
 
       - name: Update README
+        if: steps.check_run_count.outputs.skip != 'true'
         uses: actions/github-script@v5
         with:
           script: |
@@ -60,11 +70,13 @@ jobs:
           github-token: ${{ secrets.GH_TOKEN }}
 
       - name: Add changes to git
+        if: steps.check_run_count.outputs.skip != 'true'
         run: |
           git add run_count.txt
           git add README.md
 
       - name: Commit and push changes
+        if: steps.check_run_count.outputs.skip != 'true'
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
