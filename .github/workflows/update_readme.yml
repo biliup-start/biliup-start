@@ -46,6 +46,9 @@ jobs:
             echo "skip=true" >> $GITHUB_ENV
           fi
 
+      - name: Debug
+        run: echo "Skip value is ${{ env.skip }}"
+        
       - name: Set Run Count as env variable
         run: echo "total_run_count=$(cat run_count.txt | tail -1 | cut -d'=' -f2)" >> $GITHUB_ENV
 
