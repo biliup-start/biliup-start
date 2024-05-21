@@ -31,7 +31,8 @@ jobs:
           MAC_ADDRESS = "${{ secrets.MAC_ADDRESS }}" 
           response = requests.get("https://run.iokun.cn/get_run_count/total", headers={"X-API-KEY": API_KEY, "X-MAC-ADDRESS": MAC_ADDRESS, "X-GitHub-Token": "${{ secrets.GH_TOKEN }}"})
           run_count = response.json()["total_run_count"]
-          print(f"total_run_count={run_count}", file=open("run_count.txt", "a"))
+          with open("run_count.txt", "a") as file:
+              print(f"total_run_count={run_count}", file=file)
         shell: python
         
       - name: Check if Run Count has increased
