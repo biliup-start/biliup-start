@@ -72,13 +72,13 @@ jobs:
           github-token: ${{ secrets.GH_TOKEN }}
 
       - name: Add changes to git
-        if: steps.check_run_count.outputs.skip != 'true'
+        if: env.skip == 'false'
         run: |
           git add run_count.txt
           git add README.md
 
       - name: Commit and push changes
-        if: steps.check_run_count.outputs.skip != 'true'
+        if: env.skip == 'false'
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
