@@ -10,6 +10,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_TOKEN }} 
 
       - name: Set up Python
         uses: actions/setup-python@v3
@@ -45,7 +47,7 @@ jobs:
               readme += `\nRun Count: ${{ env.total_run_count }}`;
             }
             fs.writeFileSync('README.md', readme);
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN }}  
 
       - name: Add changes to git
         run: |
