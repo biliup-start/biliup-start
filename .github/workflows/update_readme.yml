@@ -35,6 +35,9 @@ jobs:
           print(f"total_run_count={run_count}", file=open("run_count.txt", "a"))
         shell: python
 
+      - name: Set Run Count as env variable
+        run: echo "total_run_count=$(cat run_count.txt | tail -1 | cut -d'=' -f2)" >> $GITHUB_ENV
+
       - name: Update README
         uses: actions/github-script@v5
         with:
@@ -44,12 +47,12 @@ jobs:
             if (fs.existsSync('README.md')) {
               readme = fs.readFileSync('README.md', 'utf8');
             }
-            const runCountString = `**脚本总计** Run Count: ${{ env.total_run_count }}`;
-            const runCountRegex = /\*\*脚本总计\*\* Run Count: \d+/;
+            const runCountString = `**脚本运行总计：** ${{ env.total_run_count }}`;
+            const runCountRegex = /\*\*脚本运行总计：\*\* \d+/;
             if (readme.match(runCountRegex)) {
               readme = readme.replace(runCountRegex, runCountString);
-            } else if (readme.includes('**脚本总计**')) {
-              readme = readme.replace('**脚本总计**', runCountString);
+            } else if (readme.includes('**脚本运行总计：**')) {
+              readme = readme.replace('**脚本运行总计：**', runCountString);
             } else {
               readme += `\n${runCountString}`;
             }
