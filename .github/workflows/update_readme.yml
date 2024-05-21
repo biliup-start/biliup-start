@@ -9,10 +9,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: 3.8
 
@@ -28,7 +28,7 @@ jobs:
           API_KEY = "${{ secrets.API_KEY }}"
           response = requests.get("https://run.iokun.cn/get_run_count/total", headers={"X-API-KEY": API_KEY})
           run_count = response.json()["total_run_count"]
-          print(f"::set-output name=total_run_count::{run_count}")
+          print(f"total_run_count={run_count}", file=open("${{ env.GITHUB_ENV }}", "a"))
         shell: python
 
       - name: Update README
@@ -40,12 +40,12 @@ jobs:
             if (fs.existsSync('README.md')) {
               readme = fs.readFileSync('README.md', 'utf8');
             }
-            readme = readme.replace(/Run Count: \d+/, `Run Count: ${{ steps.get_run_count.outputs.total_run_count }}`);
+            readme = readme.replace(/Run Count: \d+/, `Run Count: ${{ env.total_run_count }}`);
             if (!readme.includes('Run Count:')) {
-              readme += `\nRun Count: ${{ steps.get_run_count.outputs.total_run_count }}`;
+              readme += `\nRun Count: ${{ env.total_run_count }}`;
             }
             fs.writeFileSync('README.md', readme);
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit and push changes
         run: |
