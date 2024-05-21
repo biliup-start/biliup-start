@@ -28,7 +28,7 @@ jobs:
           API_KEY = "${{ secrets.API_KEY }}"
           response = requests.get("https://run.iokun.cn/get_run_count/total", headers={"X-API-KEY": API_KEY})
           run_count = response.json()["total_run_count"]
-          print(f"total_run_count={run_count}", file=open("${{ env.GITHUB_ENV }}", "a"))
+          print(f"total_run_count={run_count}", file=open("run_count.txt", "a"))
         shell: python
 
       - name: Update README
