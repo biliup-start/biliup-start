@@ -26,11 +26,7 @@ jobs:
       env: 
         API_KEY: ${{ secrets.API_KEY }} 
       run: |
-        chmod +x update_readme.py
         python update_readme.py
-        
-    - name: Commit and push if changed
-      run: |
         git config --global user.email "actions@github.com"
         git config --global user.name "GitHub Actions"
         git add -A
