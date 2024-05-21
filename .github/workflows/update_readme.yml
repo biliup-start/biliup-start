@@ -40,9 +40,9 @@ jobs:
       - name: Check if Run Count has increased
         id: check_run_count
         run: |
-          echo "PREV_RUN_COUNT=$(cat run_count.txt | tail -2 | head -1 | cut -d'=' -f2)" >> $GITHUB_ENV
-          echo "CURR_RUN_COUNT=$(cat run_count.txt | tail -1 | cut -d'=' -f2)" >> $GITHUB_ENV
-          if [ $CURR_RUN_COUNT -le $PREV_RUN_COUNT ]; then
+          PREV_RUN_COUNT=$(cat run_count.txt | tail -2 | head -1 | cut -d'=' -f2)
+          CURR_RUN_COUNT=$(cat run_count.txt | tail -1 | cut -d'=' -f2)
+          if [ $((CURR_RUN_COUNT)) -le $((PREV_RUN_COUNT)) ]; then
             echo "skip=true" >> $GITHUB_ENV
           fi
 
