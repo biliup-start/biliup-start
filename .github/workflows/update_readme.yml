@@ -18,8 +18,10 @@ jobs:
           token: ${{ secrets.GH_TOKEN }} 
 
       - name: Set up Python and Install dependencies
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
         run: |
-          sudo apt-get install python3.8
           python -m pip install --upgrade pip
           pip install requests
 
