@@ -7,7 +7,12 @@ GET_RUN_COUNT_URL = "https://run.iokun.cn/get_run_count/total"
 def get_run_count():
     headers = {"X-API-KEY": API_KEY}
     response = requests.get(GET_RUN_COUNT_URL, headers=headers)
-    return response.json()['total_run_count']
+    if response.status_code != 200:
+        raise Exception(f"API request failed with status code {response.status_code}")
+    try:
+        return response.json()['total_run_count']
+    except json.decoder.JSONDecodeError:
+        raise Exception(f"Failed to parse API response: {response.text}")
 
 def update_readme(run_count):
     with open("README.md", "r") as readme:
