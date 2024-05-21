@@ -1,4 +1,4 @@
-name: update_readme
+name: Update
 
 on:
   workflow_dispatch:
@@ -32,11 +32,24 @@ jobs:
         shell: python
 
       - name: Update README
-        uses: fxcoudert/update-readme-action@v1.0.0
+        uses: actions/github-script@v5
         with:
-          file: README.md
-          regex: "Run Count: "
-          replacement: "Run Count: ${{ steps.get_run_count.outputs.total_run_count }}"
-          commit-message: "feat: update run count in README"
-          author-name: GitHub Actions
-          author-email: actions@github.com
+          script: |
+            const fs = require('fs');
+            let readme = '';
+            if (fs.existsSync('README.md')) {
+              readme = fs.readFileSync('README.md', 'utf8');
+            }
+            readme = readme.replace(/Run Count: \d+/, `Run Count: ${{ steps.get_run_count.outputs.total_run_count }}`);
+            if (!readme.includes('Run Count:')) {
+              readme += `\nRun Count: ${{ steps.get_run_count.outputs.total_run_count }}`;
+            }
+            fs.writeFileSync('README.md', readme);
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git commit -am "feat: update run count in README"
+          git push
