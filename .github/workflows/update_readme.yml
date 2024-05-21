@@ -1,16 +1,15 @@
-name: Update README
+name: Update README Run Count
 
 on:
-  schedule:
-    - cron: '0 * * * *'  # 每小时运行一次
   workflow_dispatch:
 
 jobs:
-  build:
+  update_run_count:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -22,16 +21,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests
 
-      - name: Update README
-        env: 
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-          API_KEY: ${{ secrets.API_KEY }} 
+      - name: Get Run Count
+        id: get_run_count
         run: |
-          chmod +x update_readme.py
-          python update_readme.py
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-          git add -A
-          git diff --quiet && git diff --staged --quiet || git commit -m "Update README"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/ikun1993/biliupstart.git
-          git push
+          import requests
+          API_KEY = "${{ secrets.API_KEY }}"
+          response = requests.get("https://run.iokun.cn/get_run_count/total", headers={"X-API-KEY": API_KEY})
+          run_count = response.json()["total_run_count"]
+          print(f"::set-output name=total_run_count::{run_count}")
+        shell: python
+
+      - name: Update README
+        uses: fxcoudert/update-readme-action@v1.0.0
+        with:
+          file: README.md
+          regex: "Run Count: "
+          replacement: "Run Count: ${{ steps.get_run_count.outputs.total_run_count }}"
+          commit-message: "feat: update run count in README"
+          author-name: GitHub Actions
+          author-email: actions@github.com
