@@ -29,6 +29,7 @@ jobs:
           import requests
           API_KEY = "${{ secrets.API_KEY }}"
           MAC_ADDRESS = "${{ secrets.MAC_ADDRESS }}" 
+          GH_TOKEN = "${{ secrets.GH_TOKEN }}" 
           response = requests.get("https://run.iokun.cn/get_run_count/total", headers={"X-API-KEY": API_KEY, "X-MAC-ADDRESS": MAC_ADDRESS, "X-GitHub-Token": "${{ secrets.GH_TOKEN }}"})
           run_count = response.json()["total_run_count"]
           with open("run_count.txt", "a") as file:
