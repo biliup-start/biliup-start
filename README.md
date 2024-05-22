@@ -2,7 +2,7 @@
 
 **biliup项目**的一键启动：`https://github.com/biliup/biliup`
 
-本项目支持**Windows**端和**debian**及其分支
+本项目支持**Windows** **debian** **ubuntu** **centos** 系统
 
 套娃基于biliup社区一键安装脚本 `https://biliup.me/d/34`
 
