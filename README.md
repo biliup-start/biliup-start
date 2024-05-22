@@ -1,4 +1,4 @@
-**脚本运行总计：** 524 
+**脚本运行总计：** 525 
 
 **biliup项目**的一键启动：`https://github.com/biliup/biliup`
 
