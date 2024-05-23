@@ -9,7 +9,7 @@
 
 基于 **biliup** 项目一键启动脚本：`https://github.com/biliup/biliup`
 
-
+#
 # 脚本直接使用：
 
 Windows版：
@@ -23,6 +23,8 @@ Linux版(debian)：
 ```bash
 wget -O installb.sh https://github.com/ikun1993/biliupstart/releases/latest/download/start.sh && chmod +x installb.sh && bash installb.sh
 ```
+
+#
 # 国内直接使用：
 
 Windows版：
@@ -37,4 +39,5 @@ Linux版(debian)：
 wget -O installb.sh https://mirror.ghproxy.com/https://github.com/ikun1993/biliupstart/releases/latest/download/start.sh && chmod +x installb.sh && bash installb.sh
 ```
 
+#
 # 注：如你手动已安装biliup 脚本可能存在不支持行为。
