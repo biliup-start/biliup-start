@@ -15,6 +15,9 @@
 Windows版：
 
 ```bash
+https://github.com/ikun1993/biliupstart/releases/latest/download/start.ps1
+```
+```bash
 https://github.com/ikun1993/biliupstart/releases/latest/download/start.bat
 ```
 
@@ -29,6 +32,9 @@ wget -O installb.sh https://github.com/ikun1993/biliupstart/releases/latest/down
 
 Windows版：
 
+```bash
+https://mirror.ghproxy.com/https://github.com/ikun1993/biliupstart/releases/latest/download/start.ps1
+```
 ```bash
 https://mirror.ghproxy.com/https://github.com/ikun1993/biliupstart/releases/latest/download/start.bat
 ```
