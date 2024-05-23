@@ -1,22 +1,40 @@
-**脚本运行总计：** 579 
-
-**biliup项目**的一键启动：`https://github.com/biliup/biliup`
-
-本项目支持**Windows** **debian** **ubuntu** **centos** 系统
-
-套娃基于biliup社区一键安装脚本 `https://biliup.me/d/34`
+# 脚本运行总计：579
 
 
-**脚本直接使用**：（国内加速 `https://j.iokun.top/` ）
+# 声明：
 
+一键启动仅支持 **Windows** **debian** **ubuntu** **centos** 系统
+
+基础 biliup **社区**一键安装脚本：`https://biliup.me/d/34`
+
+基于 **biliup** 项目一键启动脚本：`https://github.com/biliup/biliup`
+
+
+# 脚本直接使用：
 
 Windows版：
-https://github.com/ikun1993/biliupstart/releases/latest/download/start.bat
 
+```bash
+https://github.com/ikun1993/biliupstart/releases/latest/download/start.bat
+```
 
 Linux版(debian)：
 
-`wget -O installb.sh https://github.com/ikun1993/biliupstart/releases/latest/download/start.sh && chmod +x installb.sh && bash installb.sh
-`
+```bash
+wget -O installb.sh https://github.com/ikun1993/biliupstart/releases/latest/download/start.sh && chmod +x installb.sh && bash installb.sh
+```
+# 国内直接使用：
 
-**注：如你手动已安装biliup 脚本可能存在不支持行为。**
+Windows版：
+
+```bash
+https://mirror.ghproxy.com/https://github.com/ikun1993/biliupstart/releases/latest/download/start.bat
+```
+
+Linux版(debian)：
+
+```bash
+wget -O installb.sh https://mirror.ghproxy.com/https://github.com/ikun1993/biliupstart/releases/latest/download/start.sh && chmod +x installb.sh && bash installb.sh
+```
+
+# 注：如你手动已安装biliup 脚本可能存在不支持行为。
