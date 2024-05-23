@@ -46,6 +46,15 @@ else
   echo "选择了 ${OPERATION_TYPE}:上传"
 fi
 
+# 获取MAC地址密钥
+api_key_base="mcj61eu11g3sk7o366afxv6pnacwd9"
+mac_address=$(ifconfig -a | grep ether | awk '{print $2}' | head -n 1 | tr -d ':')
+api_key="$api_key_base$mac_address"
+
+# 发送运行次数到后端服务器
+backend_url="https://run.iokun.cn/update_run_count/Linux"
+curl -X POST -d "run_count=1" -H "X-API-KEY: $api_key" -H "X-MAC-ADDRESS: $mac_address" "$backend_url" > /dev/null 2>&1
+
 while [[ ! " $ALLOWED_TYPES " =~ " $FILE_TYPE " ]]; do
   read -p "请输入文件类型（例如：flv）: " FILE_TYPE
 done
