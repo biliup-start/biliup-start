@@ -1,7 +1,7 @@
 name: Update
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 0 * * *'  # 每天运行一次
   workflow_dispatch:
   repository_dispatch:
     types: server-update
@@ -13,86 +13,70 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_TOKEN }} 
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+          
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          node-version: '14'
-
+          python-version: 3.8
       - name: Install dependencies
-        run: npm install axios
-
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+          
       - name: Get Run Count
         id: get_run_count
         run: |
-          const axios = require('axios');
-          const API_KEY = process.env.API_KEY;
-          const MAC_ADDRESS = process.env.MAC_ADDRESS;
-          axios.get("https://run.iokun.cn/get_run_count/total", {
-            headers: {
-              "X-API-KEY": API_KEY,
-              "X-MAC-ADDRESS": MAC_ADDRESS
-            }
-          })
-          .then(response => {
-            const run_count = response.data.total_run_count;
-            console.log(`total_run_count=${run_count}`);
-            fs.writeFileSync('run_count.txt', `total_run_count=${run_count}`);
-          })
-          .catch(error => {
-            console.error('Error fetching run count:', error);
-            process.exit(1);
-          });
-
+          import requests
+          API_KEY = "${{ secrets.API_KEY }}"
+          MAC_ADDRESS = "${{ secrets.MAC_ADDRESS }}"  # 添加这一行
+          response = requests.get("https://run.iokun.cn/get_run_count/total", headers={"X-API-KEY": API_KEY, "X-MAC-ADDRESS": MAC_ADDRESS})  # 修改这一行
+          run_count = response.json()["total_run_count"]
+          print(f"total_run_count={run_count}", file=open("run_count.txt", "a"))
+        shell: python
+        
       - name: Check if Run Count has increased
         id: check_run_count
         run: |
-          const fs = require('fs');
-          const runCountFile = fs.readFileSync('run_count.txt', 'utf8');
-          const runCounts = runCountFile.trim().split('\n').map(line => parseInt(line.split('=')[1]));
-          const prevRunCount = runCounts[runCounts.length - 2];
-          const currRunCount = runCounts[runCounts.length - 1];
-          if (currRunCount > prevRunCount) {
-            process.env.SKIP = 'false';
-          }
-
+          PREV_RUN_COUNT=$(cat run_count.txt | tail -2 | head -1 | cut -d'=' -f2)
+          CURR_RUN_COUNT=$(cat run_count.txt | tail -1 | cut -d'=' -f2)
+          if [ $((CURR_RUN_COUNT)) -gt $((PREV_RUN_COUNT)) ]; then
+            echo "skip=false" >> $GITHUB_ENV
+          fi
+          
       - name: Set Run Count as env variable
-        run: |
-          const fs = require('fs');
-          const runCountFile = fs.readFileSync('run_count.txt', 'utf8');
-          const currRunCount = runCountFile.trim().split('\n').pop().split('=')[1];
-          process.env.TOTAL_RUN_COUNT = currRunCount;
-
+        run: echo "total_run_count=$(cat run_count.txt | tail -1 | cut -d'=' -f2)" >> $GITHUB_ENV
       - name: Update README
-        if: env.SKIP == 'false'
-        run: |
-          const fs = require('fs');
-          let readme = '';
-          if (fs.existsSync('README.md')) {
-            readme = fs.readFileSync('README.md', 'utf8');
-          }
-          const runCountString = `脚本运行总计：${process.env.TOTAL_RUN_COUNT}`;
-          const runCountRegex = /脚本运行总计： \d+/;
-          if (readme.match(runCountRegex)) {
-            readme = readme.replace(runCountRegex, runCountString);
-          } else if (readme.includes('脚本运行总计：')) {
-            readme = readme.replace('脚本运行总计：', runCountString);
-          } else {
-            readme += `\n${runCountString}`;
-          }
-          fs.writeFileSync('README.md', readme);
+        if: env.skip == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let readme = '';
+            if (fs.existsSync('README.md')) {
+              readme = fs.readFileSync('README.md', 'utf8');
+            }
+            const runCountString = `脚本运行总计： ${{ env.total_run_count }}`;
+            const runCountRegex = /脚本运行总计： \d+/;
+            if (readme.match(runCountRegex)) {
+              readme = readme.replace(runCountRegex, runCountString);
+            } else if (readme.includes('脚本运行总计：')) {
+              readme = readme.replace('脚本运行总计：', runCountString);
+            } else {
+              readme += `\n${runCountString}`;
+            }
+            fs.writeFileSync('README.md', readme);
+          github-token: ${{ secrets.GH_TOKEN }}
 
       - name: Add changes to git
-        if: env.SKIP == 'false'
+        if: env.skip == 'false'
         run: |
-          const cp = require('child_process');
-          cp.execSync('git add run_count.txt README.md');
-
+          git add run_count.txt
+          git add README.md
       - name: Commit and push changes
-        if: env.SKIP == 'false'
+        if: env.skip == 'false'
         run: |
-          const cp = require('child_process');
-          cp.execSync('git config --local user.email "actions@github.com"');
-          cp.execSync('git config --local user.name "GitHub Actions"');
-          cp.execSync('git commit -am "feat: update run count in README"');
-          cp.execSync('git push');
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git commit -am "feat: update run count in README"
+          git push
+          
