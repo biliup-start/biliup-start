@@ -82,7 +82,7 @@ jobs:
         with:
           source_branch: "update-run-count"
           destination_branch: "main"
-          github_token: ${{ secrets.GH_PAT }}
+          github_token: ${{ secrets.GH_TOKEN }}
           pr_title: "feat: update run count in README"
           pr_body: "This PR updates the run count in README."
           pr_label: "automated pr"
