@@ -9,11 +9,16 @@ jobs:
   update_run_count:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout main branch
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_TOKEN }}
-          ref: 'run-count'  # 检出 run-count 分支
+          
+      - name: Check if run-count branch exists and sync with main
+        run: |
+          git checkout run-count || git checkout -b run-count
+          git merge main --allow-unrelated-histories || true
+        shell: bash
 
       - name: Set up Python
         uses: actions/setup-python@v5
