@@ -1,7 +1,7 @@
 # 脚本运行总计： 786 次
 
 
-# 声明：
+## 声明
 
 一键启动仅支持 **Windows** **debian** **ubuntu** **centos** 系统
 
@@ -10,7 +10,7 @@
 基于 **biliup** 项目一键启动脚本：`https://github.com/biliup/biliup`
 
 #
-# 脚本直接使用：
+#### 脚本直接使用
 
 Windows版：
 
@@ -28,7 +28,7 @@ wget -O installb.sh https://github.com/ikun1993/biliupstart/releases/latest/down
 ```
 
 #
-# 国内直接使用：
+#### 国内直接使用
 
 Windows版：
 
@@ -46,9 +46,9 @@ wget -O installb.sh https://mirror.ghproxy.com/https://github.com/ikun1993/biliu
 ```
 
 #
-# Stars
+#### Stars
 [![Star History Chart](https://api.star-history.com/svg?repos=ikun1993/biliupstart&type=Date)](https://star-history.com/#ikun1993/biliupstart&Date)
 
 #
-# 注：如你手动已安装biliup 脚本可能存在不支持行为。
+**注：如你手动已安装biliup 脚本可能存在不支持行为。**
 
