@@ -28,15 +28,21 @@ jobs:
           const axios = require('axios');
           const API_KEY = process.env.API_KEY;
           const MAC_ADDRESS = process.env.MAC_ADDRESS;
-          const response = await axios.get("https://run.iokun.cn/get_run_count/total", {
+          axios.get("https://run.iokun.cn/get_run_count/total", {
             headers: {
               "X-API-KEY": API_KEY,
               "X-MAC-ADDRESS": MAC_ADDRESS
             }
+          })
+          .then(response => {
+            const run_count = response.data.total_run_count;
+            console.log(`total_run_count=${run_count}`);
+            fs.writeFileSync('run_count.txt', `total_run_count=${run_count}`);
+          })
+          .catch(error => {
+            console.error('Error fetching run count:', error);
+            process.exit(1);
           });
-          const run_count = response.data.total_run_count;
-          console.log(`total_run_count=${run_count}`);
-          fs.writeFileSync('run_count.txt', `total_run_count=${run_count}`);
 
       - name: Check if Run Count has increased
         id: check_run_count
