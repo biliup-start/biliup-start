@@ -21,7 +21,7 @@ jobs:
     - name: Compile script
       run: |
         # Run your compile script
-        pwsh biliup.ps1
+        pwsh ./Windows/biliup.ps1
     - name: Create Tag
       run: |
         git config --local user.email "action@github.com"
