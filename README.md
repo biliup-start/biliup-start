@@ -51,5 +51,5 @@ wget -O installb.sh https://mirror.ghproxy.com/https://github.com/ikun1993/biliu
 [![Star History Chart](https://api.star-history.com/svg?repos=ikun1993/biliupstart&type=Date)](https://star-history.com/#ikun1993/biliupstart&Date)
 
 #
-**注：如你手动已安装biliup 脚本可能存在不支持行为。**
+**注：如你已手动安装过biliup，一键脚本可能会存在不支持行为。**
 
