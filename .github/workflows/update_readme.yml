@@ -1,7 +1,7 @@
 name: Update
 on:
   schedule:
-    - cron: '0 0 * * *' 
+    - cron: '0 0 * * *'
   workflow_dispatch:
   repository_dispatch:
     types: server-update
@@ -12,13 +12,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GH_TOKEN } }
           
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: 3.8
-          
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -34,7 +34,7 @@ jobs:
           run_count = response.json()["total_run_count"]
           print(f"total_run_count={run_count}", file=open("run_count.txt", "a"))
         shell: python
-        
+
       - name: Check if Run Count has increased
         id: check_run_count
         run: |
@@ -43,13 +43,9 @@ jobs:
           if [ $((CURR_RUN_COUNT)) -gt $((PREV_RUN_COUNT)) ]; then
             echo "skip=false" >> $GITHUB_ENV
           fi
-          
+        
       - name: Set Run Count as env variable
         run: echo "total_run_count=$(cat run_count.txt | tail -1 | cut -d'=' -f2)" >> $GITHUB_ENV
-      
-      - name: Create new branch
-        run: |
-          git checkout -b update-run-count
           
       - name: Update README
         if: env.skip == 'false'
@@ -71,18 +67,18 @@ jobs:
               readme += `\n${runCountString}`;
             }
             fs.writeFileSync('README.md', readme);
-          github-token: ${{ secrets.GH_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN } }
 
-      - name: Push changes to new branch
+      - name: Add changes to git
+        if: env.skip == 'false'
         run: |
-          git push origin update-run-count
+          git add run_count.txt
+          git add README.md
           
-      - name: Create Pull Request
-        uses: repo-sync/pull-request@v2
-        with:
-          source_branch: "update-run-count"
-          destination_branch: "main"
-          github_token: ${{ secrets.GH_TOKEN }}
-          pr_title: "feat: update run count in README"
-          pr_body: "This PR updates the run count in README."
-          pr_label: "automated pr"
+      - name: Commit and push changes
+        if: env.skip == 'false'
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git commit -am "feat: update run count in README"
+          git push
