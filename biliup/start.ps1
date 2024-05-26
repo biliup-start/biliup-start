@@ -1,118 +1,118 @@
-    # ÉèÖÃÑÓ³ÙÕ¹¿ª
+    # è®¾ç½®å»¶è¿Ÿå±•å¼€
     Set-StrictMode -Version latest
 
-    # »ñÈ¡MACµØÖ·ÃÜÔ¿
+    # è·å–MACåœ°å€å¯†é’¥
     $api_key_base = "mcj61eu11g3sk7o366afxv6pnacwd9"
     $mac_address = (Get-WmiObject Win32_NetworkAdapterConfiguration | Where { $_.IPEnabled }).MACAddress.Replace(':', '').ToUpper()
     $api_key = $api_key_base + $mac_address
 
-    # ·¢ËÍÔËĞĞ´ÎÊıµ½ºó¶Ë·şÎñÆ÷
+    # å‘é€è¿è¡Œæ¬¡æ•°åˆ°åç«¯æœåŠ¡å™¨
     $backend_url = "https://run.iokun.cn/update_run_count/Windows"
     $response = Invoke-RestMethod -Uri $backend_url -Method POST -Body @{ run_count = 1 } -Headers @{ "X-API-KEY" = $api_key; "X-MAC-ADDRESS" = $mac_address }
 
-    # ÇĞ»»±àÂëÒÔÖ§³ÖÖĞÎÄ×Ö·û
+    # åˆ‡æ¢ç¼–ç ä»¥æ”¯æŒä¸­æ–‡å­—ç¬¦
     chcp 65001 > $null
 
-    # ÏÔÊ¾»¶Ó­ĞÅÏ¢
-    Write-Host "×¢Òâ£º¸Ã½Å±¾µÚÈı·½ÖÆ×÷Óë¹Ù·½ÎŞ¹Ø"
-    Write-Host "×¢Òâ£ºÔŞÖú°®·¢µçÇë¿ª·¢ÕßºÈ±­¿§·È"
-    Write-Host "×¢Òâ£ºhttps://afdian.net/a/biliup"
+    # æ˜¾ç¤ºæ¬¢è¿ä¿¡æ¯
+    Write-Host "æ³¨æ„ï¼šè¯¥è„šæœ¬ç¬¬ä¸‰æ–¹åˆ¶ä½œä¸å®˜æ–¹æ— å…³"
+    Write-Host "æ³¨æ„ï¼šèµåŠ©çˆ±å‘ç”µè¯·å¼€å‘è€…å–æ¯å’–å•¡"
+    Write-Host "æ³¨æ„ï¼šhttps://afdian.net/a/biliup"
 
-    # »ñÈ¡ÓÃ»§ÊäÈëµÄÅÌ·û
-    $UserDrive = Read-Host "ÇëÊäÈëÄãÏëÂ¼²¥µÄÅÌ·û£¨Ä¬ÈÏÎªCÅÌ£©"
+    # è·å–ç”¨æˆ·è¾“å…¥çš„ç›˜ç¬¦
+    $UserDrive = Read-Host "è¯·è¾“å…¥ä½ æƒ³å½•æ’­çš„ç›˜ç¬¦ï¼ˆé»˜è®¤ä¸ºCç›˜ï¼‰"
     if (-not $UserDrive) {
         $UserDrive = "C"
     }
 
-    # ¼ì²éÓÃ»§ÊäÈëµÄÅÌ·ûÊÇ·ñÓĞĞ§
+    # æ£€æŸ¥ç”¨æˆ·è¾“å…¥çš„ç›˜ç¬¦æ˜¯å¦æœ‰æ•ˆ
     while (-not (Test-Path "${UserDrive}:\\")) {
-        Write-Host "´íÎó: Î´ÕÒµ½ ${UserDrive} ÅÌ£¬Çëµ½ÎÒµÄµçÄÔÖĞ²é¿´ÕıÈ·ÅÌ·û"
-        $UserDrive = Read-Host "ÇëÊäÈëÄãÏëÂ¼²¥µÄÅÌ·û£¨Ä¬ÈÏÎªCÅÌ£©"
+        Write-Host "é”™è¯¯: æœªæ‰¾åˆ° ${UserDrive} ç›˜ï¼Œè¯·åˆ°æˆ‘çš„ç”µè„‘ä¸­æŸ¥çœ‹æ­£ç¡®ç›˜ç¬¦"
+        $UserDrive = Read-Host "è¯·è¾“å…¥ä½ æƒ³å½•æ’­çš„ç›˜ç¬¦ï¼ˆé»˜è®¤ä¸ºCç›˜ï¼‰"
         if ([string]::IsNullOrEmpty($UserDrive)) {
             $UserDrive = "C"
         }
     }
 
-    # ÉèÖÃbiliupÄ¿Â¼
+    # è®¾ç½®biliupç›®å½•
     $BILIUP_DIR = "${UserDrive}:\opt\biliup"
 
-    # ¼ì²éÊÇ·ñÓĞ biliup ½ø³ÌÕıÔÚÔËĞĞ
+    # æ£€æŸ¥æ˜¯å¦æœ‰ biliup è¿›ç¨‹æ­£åœ¨è¿è¡Œ
     $biliupProcess = Get-Process -Name "biliup" -ErrorAction SilentlyContinue
 
     if ($biliupProcess) {
-        Write-Host "ÄãÒÑ¾­ÔËĞĞÁËÒ»¸ö biliup ½ø³Ì¡£½«ÎªÄúĞÂÔö biliup¡£"
+        Write-Host "ä½ å·²ç»è¿è¡Œäº†ä¸€ä¸ª biliup è¿›ç¨‹ã€‚å°†ä¸ºæ‚¨æ–°å¢ biliupã€‚"
         $BILIUP_DIR = "${UserDrive}:\opt\biliup\$((Get-Random).ToString())"
     } else {
-        Write-Host "biliup ½ø³ÌÎ´ÔÚÔËĞĞ£¬¼ì²é¶Ë¿Ú 19159 ÊÇ·ñ±»Õ¼ÓÃ¡£"
+        Write-Host "biliup è¿›ç¨‹æœªåœ¨è¿è¡Œï¼Œæ£€æŸ¥ç«¯å£ 19159 æ˜¯å¦è¢«å ç”¨ã€‚"
 
-        # Òì²½Ö´ĞĞ¶Ë¿Ú²éÑ¯
+        # å¼‚æ­¥æ‰§è¡Œç«¯å£æŸ¥è¯¢
         $portCheckJob = Start-Job -ScriptBlock {
             Test-NetConnection -ComputerName localhost -Port 19159
         }
 
-        # µÈ´ıÒì²½ÈÎÎñÍê³É»ò³¬Ê±£¨ÀıÈç£¬33Ãë£©
+        # ç­‰å¾…å¼‚æ­¥ä»»åŠ¡å®Œæˆæˆ–è¶…æ—¶ï¼ˆä¾‹å¦‚ï¼Œ33ç§’ï¼‰
         Wait-Job $portCheckJob -Timeout 33
 
-        # ¼ì²éÒì²½ÈÎÎñÊÇ·ñÒÑÍê³É
+        # æ£€æŸ¥å¼‚æ­¥ä»»åŠ¡æ˜¯å¦å·²å®Œæˆ
         if ($portCheckJob.State -eq "Completed") {
             $portInUse = Receive-Job $portCheckJob
 
             if ($portInUse) {
-                Write-Host "¶Ë¿Ú 19159 ±»Õ¼ÓÃ£¬ÕıÔÚ³¢ÊÔÊÍ·Å¶Ë¿Ú×ÊÔ´..."
+                Write-Host "ç«¯å£ 19159 è¢«å ç”¨ï¼Œæ­£åœ¨å°è¯•é‡Šæ”¾ç«¯å£èµ„æº..."
 
-                # É±ËÀÕ¼ÓÃ¶Ë¿Ú 19159 µÄ½ø³Ì
+                # æ€æ­»å ç”¨ç«¯å£ 19159 çš„è¿›ç¨‹
                 $processUsingPort = Get-NetTCPConnection | Where-Object { $_.LocalPort -eq 19159 }
                 if ($processUsingPort) {
-                    Write-Host "·¢ÏÖÕ¼ÓÃ¶Ë¿Ú 19159 µÄ½ø³Ì¡£"
+                    Write-Host "å‘ç°å ç”¨ç«¯å£ 19159 çš„è¿›ç¨‹ã€‚"
                     Stop-Process -Id $processUsingPort.OwningProcess -Force
-                    Write-Host "ÒÑ³É¹¦É±ËÀÕ¼ÓÃ¶Ë¿Ú 19159 µÄ½ø³Ì¡£"
+                    Write-Host "å·²æˆåŠŸæ€æ­»å ç”¨ç«¯å£ 19159 çš„è¿›ç¨‹ã€‚"
                 }
             }
         } else {
-            Write-Host "¶Ë¿Ú²éÑ¯³¬Ê±»ò³öÏÖÆäËû´íÎó¡£"
+            Write-Host "ç«¯å£æŸ¥è¯¢è¶…æ—¶æˆ–å‡ºç°å…¶ä»–é”™è¯¯ã€‚"
         }
 
-        # ÇåÀíºóÌ¨ÈÎÎñ
+        # æ¸…ç†åå°ä»»åŠ¡
         Remove-Job -Name $portCheckJob.Name
     }
 
-    # ´´½¨biliupÄ¿Â¼
+    # åˆ›å»ºbiliupç›®å½•
     if (-not (Test-Path $BILIUP_DIR)) {
         New-Item -ItemType Directory -Path $BILIUP_DIR | Out-Null
     }
 
-    # ÇĞ»»ÖÁbiliupÄ¿Â¼
+    # åˆ‡æ¢è‡³biliupç›®å½•
     Set-Location $BILIUP_DIR
-    Write-Host "ÄãÂ¼²¥ÎÄ¼şºÍÈÕÖ¾ÔÚ $BILIUP_DIR"
-    Write-Host "·´À¡ÎÊÌâĞè´øÉÏÎÄ¼ş $BILIUP_DIR\ds_update.log"
+    Write-Host "ä½ å½•æ’­æ–‡ä»¶å’Œæ—¥å¿—åœ¨ $BILIUP_DIR"
+    Write-Host "åé¦ˆé—®é¢˜éœ€å¸¦ä¸Šæ–‡ä»¶ $BILIUP_DIR\ds_update.log"
 
-    # »ñÈ¡¹ú¼Ò´úÂë²¢ÉèÖÃÏàÓ¦µÄÏÂÔØÔ´
+    # è·å–å›½å®¶ä»£ç å¹¶è®¾ç½®ç›¸åº”çš„ä¸‹è½½æº
     $CountryCode = Invoke-RestMethod -Uri "https://ipinfo.io/country"
     if ($CountryCode.Trim() -eq "CN") {
         $biliupgithub = "https://j.iokun.top/"
         $pipsource = "-i https://mirrors.cernet.edu.cn/pypi/web/simple"
-        Write-Host "ÄãµÄ IP ¹éÊôµØÖĞ¹ú´óÂ½£¬½«Ê¹ÓÃÈı·½Ô´ºÍ´úÀíÏÂÔØ¡£"
+        Write-Host "ä½ çš„ IP å½’å±åœ°ä¸­å›½å¤§é™†ï¼Œå°†ä½¿ç”¨ä¸‰æ–¹æºå’Œä»£ç†ä¸‹è½½ã€‚"
     } else {
         $biliupgithub = ""
         $pipsource = ""
-        Write-Host "ÄãµÄ IP ¹éÊôµØ²»ÔÚÖĞ¹ú´óÂ½£¬½«Ê¹ÓÃ¹Ù·½Ô´ºÍÖ±Á´ÏÂÔØ¡£"
+        Write-Host "ä½ çš„ IP å½’å±åœ°ä¸åœ¨ä¸­å›½å¤§é™†ï¼Œå°†ä½¿ç”¨å®˜æ–¹æºå’Œç›´é“¾ä¸‹è½½ã€‚"
     }
 
-    # ¼ì²éPythonÊÇ·ñÒÑ°²×°
+    # æ£€æŸ¥Pythonæ˜¯å¦å·²å®‰è£…
     $python_path = Get-Command python.exe -ErrorAction SilentlyContinue
     if (-not $python_path) {
-        Write-Host "Î´°²×° Python£¬¿ªÊ¼°²×°»·¾³ºÍbiliup ..."
+        Write-Host "æœªå®‰è£… Pythonï¼Œå¼€å§‹å®‰è£…ç¯å¢ƒå’Œbiliup ..."
         Remove-Item -Path 'C:\ProgramData\chocolatey' -Recurse -Force
         Invoke-WebRequest -Uri '${biliupgithub}https://github.com/ikun1993/biliupstart/releases/download/biliupstart/windowsbiliup.bat' -OutFile 'windowsbiliup.bat'
         Start-Process -FilePath 'windowsbiliup.bat' -Verb RunAs -Wait
         Remove-Item -Path 'windowsbiliup.bat' -Recurse -Force
     }
 
-    # ¼ì²éPython°æ±¾ÊÇ·ñÂú×ãÒªÇó
+    # æ£€æŸ¥Pythonç‰ˆæœ¬æ˜¯å¦æ»¡è¶³è¦æ±‚
     $python_version = python --version
     $python_version_match = $python_version -match 'Python ([0-9.]+)'
     if (-not $python_version_match) {
-        Write-Host "ÎŞ·¨»ñÈ¡ Python °æ±¾"
+        Write-Host "æ— æ³•è·å– Python ç‰ˆæœ¬"
         exit
     }
 
@@ -120,7 +120,7 @@
     $python_version_numbers = $python_version_number -split '\.'
     $required_python_version = "3.7"
 
-    # ½«°æ±¾ºÅ²ğ·Ö³ÉÊı×Ö²¢Öğ¸ö±È½Ï
+    # å°†ç‰ˆæœ¬å·æ‹†åˆ†æˆæ•°å­—å¹¶é€ä¸ªæ¯”è¾ƒ
     $python_version_is_valid = $true
     foreach ($i in 0..2) {
         if ($python_version_numbers[$i] -lt $required_python_version[$i]) {
@@ -132,71 +132,71 @@
     }
 
     if (-not $python_version_is_valid) {
-        Write-Host "Python °æ±¾Ì«µÍ£¬ÇëÊÖ¶¯¸üĞÂµ½ $required_python_version »ò¸ü¸ß°æ±¾¡£µ±Ç°°æ±¾£º$python_version_number"
+        Write-Host "Python ç‰ˆæœ¬å¤ªä½ï¼Œè¯·æ‰‹åŠ¨æ›´æ–°åˆ° $required_python_version æˆ–æ›´é«˜ç‰ˆæœ¬ã€‚å½“å‰ç‰ˆæœ¬ï¼š$python_version_number"
         exit
     }
 
-    # ÏÔÊ¾µ±Ç°Python°æ±¾
-    Write-Host "Python °æ±¾£º$python_version_number"
+    # æ˜¾ç¤ºå½“å‰Pythonç‰ˆæœ¬
+    Write-Host "Python ç‰ˆæœ¬ï¼š$python_version_number"
 
-    # ¼ì²ébiliup°æ±¾
+    # æ£€æŸ¥biliupç‰ˆæœ¬
     $pipversion = (pip index versions biliup | Select-String "LATEST" | Select-Object -First 1).Line.Split(":")[1].Trim()
-    Write-Host "µ±Ç°×îĞÂ°æ±¾ v$pipversion"
+    Write-Host "å½“å‰æœ€æ–°ç‰ˆæœ¬ v$pipversion"
     if (Get-Package -Name "biliup" -ErrorAction SilentlyContinue) {
         $biliversion = 0
     } else {
         $biliversion = (pip show biliup | Select-String -Pattern "Version").ToString().Split(":")[1].Trim()
-        Write-Host "±¾µØ°²×°°æ±¾ v$biliversion"
+        Write-Host "æœ¬åœ°å®‰è£…ç‰ˆæœ¬ v$biliversion"
     }
 
-    # ¸üĞÂbiliup
+    # æ›´æ–°biliup
     if ($pipversion -ne 0 -and $biliversion -ne $pipversion) {
-        $userInput = Read-Host "¼ì²éµ½ĞÂ°æ±¾£¬ÊÇ·ñĞèÒª¸üĞÂ£¿(Y/N)"
+        $userInput = Read-Host "æ£€æŸ¥åˆ°æ–°ç‰ˆæœ¬ï¼Œæ˜¯å¦éœ€è¦æ›´æ–°ï¼Ÿ(Y/N)"
         if ($userInput.ToLower() -eq "n") {
-            Write-Host "Ñ¡Ôñ²»¸üĞÂ ÈçĞè¸üĞÂÊÖ¶¯ÖÕ¶ËÊäÈë pip install $pipsource -U biliup" 
+            Write-Host "é€‰æ‹©ä¸æ›´æ–° å¦‚éœ€æ›´æ–°æ‰‹åŠ¨ç»ˆç«¯è¾“å…¥ pip install $pipsource -U biliup" 
         } else {
-            Write-Host "ÕıÔÚ¸üĞÂ biliup..."
+            Write-Host "æ­£åœ¨æ›´æ–° biliup..."
             pip install $pipsource -U biliup
             $biliversion = (pip show biliup | Select-String -Pattern "Version").ToString().Split(":")[1].Trim()
             if ($biliversion -ne $pipversion) {
-                Write-Host "¸üĞÂÊ§°Ü ÈçĞè¸üĞÂÊÖ¶¯ÖÕ¶ËÊäÈë pip install -U biliup"
+                Write-Host "æ›´æ–°å¤±è´¥ å¦‚éœ€æ›´æ–°æ‰‹åŠ¨ç»ˆç«¯è¾“å…¥ pip install -U biliup"
             }
         }
     }
 
-    # ¼ì²é¶Ë¿ÚºÅÊÇ·ñºÏ·¨
+    # æ£€æŸ¥ç«¯å£å·æ˜¯å¦åˆæ³•
     $portIsValid = $false
     while (-not $portIsValid) {
-        $UserInput = Read-Host "ÇëÊäÈëÒ»¸öĞ¡ÓÚ65535µÄ¶Ë¿ÚºÅ£¨»Ø³µÄ¬ÈÏ19159£©"
+        $UserInput = Read-Host "è¯·è¾“å…¥ä¸€ä¸ªå°äº65535çš„ç«¯å£å·ï¼ˆå›è½¦é»˜è®¤19159ï¼‰"
         if ([string]::IsNullOrEmpty($UserInput)) {
             $UserInput = "19159"
         }
         if (-not ($UserInput -match "^\d+$") -or $UserInput -gt 65535) {
-            Write-Host "´íÎó: ÇëÊäÈëÓĞĞ§µÄ¶Ë¿ÚºÅ£¬ÇëÖØĞÂÊäÈë¡£"
+            Write-Host "é”™è¯¯: è¯·è¾“å…¥æœ‰æ•ˆçš„ç«¯å£å·ï¼Œè¯·é‡æ–°è¾“å…¥ã€‚"
         } elseif ($UserInput -in (0..65535)) {
             $portIsInUse = Get-NetTCPConnection | Where-Object { $_.LocalPort -eq $UserInput }
             if ($portIsInUse) {
-                Write-Host "´íÎó: ¶Ë¿Ú $UserInput ÒÑ±»Õ¼ÓÃ£¬ÇëÖØĞÂÊäÈë¡£"
+                Write-Host "é”™è¯¯: ç«¯å£ $UserInput å·²è¢«å ç”¨ï¼Œè¯·é‡æ–°è¾“å…¥ã€‚"
             } else {
                 $portIsValid = $true
             }
         }
     }
-    Write-Host "ÄãÊäÈëµÄ¶Ë¿ÚÊÇ $UserInput"
+    Write-Host "ä½ è¾“å…¥çš„ç«¯å£æ˜¯ $UserInput"
 
-    # Æô¶¯biliup
-    $UserPassword = Read-Host "ÇëÊäÈëÃÜÂë£¨°´»Ø³µ¼ü²»Ê¹ÓÃÃÜÂë£©"
+    # å¯åŠ¨biliup
+    $UserPassword = Read-Host "è¯·è¾“å…¥å¯†ç ï¼ˆæŒ‰å›è½¦é”®ä¸ä½¿ç”¨å¯†ç ï¼‰"
     if ([string]::IsNullOrEmpty($UserPassword)) {
-        Write-Host "Î´ÆôÓÃÃÜÂë¹«Íø²»ÍÆ¼ö ³ÖĞøÔËĞĞbiliupĞè±£³Öµ±Ç°´°¿Ú´æÔÚ"
+        Write-Host "æœªå¯ç”¨å¯†ç å…¬ç½‘ä¸æ¨è æŒç»­è¿è¡Œbiliupéœ€ä¿æŒå½“å‰çª—å£å­˜åœ¨"
         Start-Process "biliup" -ArgumentList "-P $UserInput" -PassThru
         Start-Sleep -Seconds 11
         Start-Process "http://localhost:$UserInput"
     } else {
-        Write-Host "ÕËºÅ£ºbiliup ÃÜÂë£º$UserPassword ³ÖĞøÔËĞĞbiliupĞè±£³Öµ±Ç°´°¿Ú´æÔÚ"
+        Write-Host "è´¦å·ï¼šbiliup å¯†ç ï¼š$UserPassword æŒç»­è¿è¡Œbiliupéœ€ä¿æŒå½“å‰çª—å£å­˜åœ¨"
         Start-Process "biliup" -ArgumentList "-P $UserInput --password $UserPassword start" -PassThru
         Start-Sleep -Seconds 11
         Start-Process "http://localhost:$UserInput"
     }
 
-    # ½áÊø½Å±¾
-    Write-Host "½Å±¾Ö´ĞĞÍê±Ï¡£"
+    # ç»“æŸè„šæœ¬
+    Write-Host "è„šæœ¬æ‰§è¡Œå®Œæ¯•ã€‚"
