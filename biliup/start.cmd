@@ -1,6 +1,7 @@
 @echo off
+chcp 65001
  
-echo ÄãÕıÔÚÊ¹ÓÃ powershell ½Å±¾£¬µÚÒ»´Î»áÏÂÔØºóÔÙÔËĞĞÇëµÈ´ı ....
+echo ä½ æ­£åœ¨ä½¿ç”¨ powershell è„šæœ¬ï¼Œç¬¬ä¸€æ¬¡ä¼šä¸‹è½½åå†è¿è¡Œè¯·ç­‰å¾… ....
 
 for /f %%b in ('powershell -command "(Invoke-WebRequest -Uri 'https://ipinfo.io/country').Content"') do (
     set "CountryCode=%%b"
@@ -14,7 +15,7 @@ if "%CountryCode%"=="CN" (
 if not exist "./start.ps1" (
     powershell -command "(Invoke-WebRequest -Uri '%iokun%https://github.com/ikun1993/biliupstart/releases/download/biliupstart/start.ps1' -OutFile 'start.ps1')"
     if errorlevel 1 (
-        echo ÏÂÔØstart.ps1½Å±¾Ê§°Ü£¬Çë¼ì²éÍøÂçÁ¬½Ó»òÉÔºóÖØÊÔ¡£
+        echo ä¸‹è½½start.ps1è„šæœ¬å¤±è´¥ï¼Œè¯·æ£€æŸ¥ç½‘ç»œè¿æ¥æˆ–ç¨åé‡è¯•ã€‚
         pause
         exit /b 1
     )
