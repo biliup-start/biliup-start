@@ -10,7 +10,7 @@
 基于 **biliup** 项目一键启动脚本：`https://github.com/biliup/biliup`
 
 **注：如你已手动安装过biliup，一键脚本可能会存在不支持行为；    
-....... 自 biliup v0.4.65后 Windows 可用biliup.exe运行，Linux 自选AI解决。**
+....... 如出问题 Linux 自行AI；Windows biliup v0.4.65 biliup.exe 放入录播目录解决。**
 
 #
 #### 脚本直接使用
