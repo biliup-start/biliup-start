@@ -10,7 +10,7 @@
 基于 **biliup** 项目一键启动脚本：`https://github.com/biliup/biliup`
 
 **注：如你已手动安装过biliup，一键脚本可能会存在不支持行为；    
-如出问题 Linux 自行AI；Windows 到biliup项目v0.4.65将套娃 [官方exe](https://mirror.ghproxy.com/https://raw.githubusercontent.com/ikun1993/biliupstart/main/biliup/biliup.exe) 双击即可。**
+如出问题 Linux 自行AI；Windows biliup项目已出exe将套娃 [官方exe](https://mirror.ghproxy.com/https://raw.githubusercontent.com/ikun1993/biliupstart/main/biliup/biliup.exe) 双击即可。**
 
 #
 #### 脚本直接使用
@@ -36,10 +36,10 @@ wget -O installb.sh https://github.com/ikun1993/biliupstart/releases/latest/down
 Windows版：
 
 ```powershell
-https://mirror.ghproxy.com/https://github.com/ikun1993/biliupstart/releases/latest/download/start.cmd
+https://j.iokun.top/https://github.com/ikun1993/biliupstart/releases/latest/download/start.cmd
 ```
 ```powershell
-https://mirror.ghproxy.com/https://github.com/ikun1993/biliupstart/releases/latest/download/start.bat
+https://j.iokun.top/https://github.com/ikun1993/biliupstart/releases/latest/download/start.bat
 ```
 
 Linux版(debian)：
