@@ -10,7 +10,7 @@
 基于 **biliup** 项目一键启动脚本：`https://github.com/biliup/biliup`
 
 **注：如你已手动安装过biliup，一键脚本可能会存在不支持行为；    
-如出问题 Linux 自行AI；Windows biliup项目已出exe将套娃 [官方exe](https://mirror.ghproxy.com/https://raw.githubusercontent.com/ikun1993/biliupstart/main/biliup/biliup.exe) 双击即可。**
+如出问题 Linux 自行AI；Windows biliup项目已出exe本项目套娃官方 [exe](https://mirror.ghproxy.com/https://raw.githubusercontent.com/ikun1993/biliupstart/main/biliup/biliup.exe) 双击即可。**
 
 #
 #### 脚本直接使用
